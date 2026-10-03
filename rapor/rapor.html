@@ -441,18 +441,21 @@
   <tr><th style="width:40%">Ödevin istediği</th><th>Arayüzde</th><th style="width:16%">SQL</th></tr>
   <tr><td>50+ kullanıcı, 5 oturum, 100 soru</td><td>Hoca panelinde sayaçlar</td><td>A1</td></tr>
   <tr><td>Başlamamış / süren / bitmiş oturum ve zamanlar</td><td>Oturum tablosu, <b>Başlat / Bitir</b>, süre ve uzatma (+sn)</td><td>B1, D0/D1/D6</td></tr>
-  <tr><td>Canlı takip: anlık durum ve ilerleme</td><td>Hoca paneli 5 sn'de bir yenilenir: katılımcı, cevap, tamamlanma %, öğrenci bazında ilerleme</td><td>B2, B4</td></tr>
+  <tr><td>Canlı takip: anlık durum ve ilerleme</td><td>Hoca <i>Başlat</i> deyince quiz öğrencinin ekranında belirir, <i>Bitir</i> deyince kaybolur (≤1 sn). Hoca paneli yeni katılım/cevapta kendini yeniler. Süre sayacı saniye saniye işler.</td><td>B2, B4</td></tr>
   <tr><td>Cevap kaydetme akışı</td><td>Öğrenci: Katıl → şıkka tıkla → değiştir</td><td>D2, D3/D4</td></tr>
   <tr><td>Oturum sonuçları</td><td>Sonuç sayfası, öğrencinin “Sonuçlarım” listesi (<code>18/20 · %90</code>)</td><td>C1, C2</td></tr>
   <tr><td>En yüksek puanlı kullanıcılar</td><td>Hoca panelinde ilk 10</td><td>C3</td></tr>
-  <tr><td>Veri bütünlüğü</td><td>Reddedilen işlem ekranda hata mesajı olarak görünür</td><td>Kısıt / trigger</td></tr>
+  <tr><td>Veri bütünlüğü</td><td>Reddedilen işlem sarı “veri bütünlüğü kuralı” kutusunda: Türkçe açıklama + veritabanı mesajı</td><td>Kısıt / trigger</td></tr>
 </table>
 
 <h3>10.2 Önemli noktalar</h3>
 <ul>
-  <li><b>Kurallar veritabanında:</b> arayüzde ayrıca kontrol yazılmadı. Ör. hoca bir quiz sürerken ikincisini başlatmak isterse ya da öğrenci bitmiş quizde cevap değiştirmek isterse veritabanının hata mesajı ekranda görünür.</li>
+  <li><b>Kurallar veritabanında:</b> arayüzde ayrıca kontrol yazılmadı. Ör. hoca bir quiz sürerken ikincisini başlatmak isterse ya da öğrenci bitmiş quizde cevap değiştirmek isterse ekranda sarı kural kutusu çıkar (ör. “Aynı anda yalnızca bir quiz sürebilir”) ve altında veritabanının asıl mesajı görünür.</li>
   <li><b>Giriş:</b> girilen şifre kayıtlı salt ile hashlenir ve kayıtlı hash ile karşılaştırılır; şifrenin kendisi hiçbir yerde saklanmaz.</li>
-  <li><b>Canlı takip:</b> hoca sayfası <code>&lt;meta http-equiv="refresh" content="5"&gt;</code> ile 5 saniyede bir yeniden yüklenir, sorgular güncel veriyi tekrar okur.</li>
+  <li><b>Canlı (live):</b> sayfalar saniyede bir <code>/canli</code> adresine küçük bir soru sorar (cevap ör. <code>{"oturum_id": 4, "imza": "4-54-424"}</code>; imza = süren quiz + katılımcı + cevap sayısı). Değer değiştiyse sayfa yenilenir, değişmediyse hiçbir şey olmaz. Her saniye bütün sayfayı yüklemek yerine birkaç baytlık bir kontrol yapılır.</li>
+  <li><b>Süre sayacı:</b> tarayıcıda saniye saniye işler, 180 sn aşılınca uzatmayı gösterir (<code>3:12 (+12 sn)</code>).</li>
+  <li><b>Açılışta bayat veri kontrolü:</b> örnek verideki süren quiz <code>seed.py</code> anından beri işler. Hoca projeyi günler sonra açtığında “günlerdir sürüyor” görünmesin diye <code>python app.py</code> açılışta bir kez bakar: süren quiz 10 dakikadan (<code>BAYAT_ESIGI_SN = 600</code>) uzun süredir açıksa <code>seed.py</code> çalıştırılır. Uygulama çalışırken bir daha bakılmaz; 3 dakikalık eşik seçilmedi çünkü gerçek uzatmaları da bayat sayardı.</li>
+  <li><b>Kendini anlatan arayüz:</b> deneme hesapları ve “iki ayrı adres” notu giriş sayfasında; README başında “Hızlı inceleme”.</li>
   <li><b>Yetki:</b> öğrenci hoca sayfalarını açamaz (girişe yönlendirilir).</li>
   <li><b>Yapı:</b> <code>app.py</code> (~250 satır) + 5 şablon (<code>base</code>, <code>giris</code>, <code>ogrenci</code>, <code>hoca</code>, <code>sonuc</code>). Sorgular <code>queries.sql</code> ile aynıdır.</li>
 </ul>

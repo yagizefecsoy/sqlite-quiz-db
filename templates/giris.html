@@ -1,12 +1,27 @@
 {% extends "base.html" %}
 {% block icerik %}
-<div class="kart" style="max-width: 360px; margin: 60px auto;">
+<div class="kart" style="max-width: 520px; margin: 40px auto;">
   <h2>Giriş</h2>
   <form method="post">
     <input name="email" type="email" placeholder="E-posta" required>
     <input name="sifre" type="password" placeholder="Şifre" required>
     <button type="submit">Giriş yap</button>
   </form>
-  <p class="soluk">Deneme hesapları README.md dosyasında.</p>
+</div>
+
+<div class="kart" style="max-width: 520px; margin: 0 auto;">
+  <b>Deneme hesapları</b> <span class="soluk">(yalnızca örnek veri)</span>
+  <table style="margin-top: 6px;">
+    <tr><th>Rol</th><th>E-posta</th><th>Şifre</th></tr>
+    <tr><td>Hoca</td><td>hoca@okul.edu.tr</td><td>hoca123</td></tr>
+    <tr><td>Öğrenci</td><td>20240001@ogrenci.edu.tr<br><span class="soluk">… 20240060@ogrenci.edu.tr</span></td><td>ogrenci123</td></tr>
+  </table>
+  <p class="soluk" style="margin-bottom: 0;">
+    <b>Hoca ve öğrenciyi aynı anda denemek için</b> birini
+    <a href="http://127.0.0.1:5000">http://127.0.0.1:5000</a>, diğerini
+    <a href="http://localhost:5000">http://localhost:5000</a> adresinde açın.
+    Tarayıcı bunları ayrı site sayar, iki giriş birbirini kapatmaz.
+    <br>Öneri: <b>20240019</b> numaralı öğrenci süren quize katılmış ama henüz cevap vermemiştir.
+  </p>
 </div>
 {% endblock %}

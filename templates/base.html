@@ -9,9 +9,10 @@
     .ust   { background: #2b5fab; color: #fff; padding: 10px 20px; display: flex; justify-content: space-between; }
     .ust a { color: #fff; }
     .icerik { max-width: 900px; margin: 20px auto; padding: 0 16px; }
-    .kart  { background: #fff; border: 1px solid #dde1e8; border-radius: 10px; padding: 14px 18px; margin-bottom: 14px; }
+    .kart  { background: #fff; border: 1px solid #dde1e8; border-radius: 10px; padding: 14px 18px; margin-bottom: 14px; overflow-x: auto; }
     .soluk { color: #6b7385; font-size: 14px; }
     .hata  { background: #fdecea; border: 1px solid #f5c2bd; color: #a12a1f; padding: 10px 14px; border-radius: 8px; margin-bottom: 14px; }
+    .kural { background: #fdf3dd; border: 1px solid #ecd398; color: #6b4600; padding: 10px 14px; border-radius: 8px; margin-bottom: 14px; }
     .rozet { display: inline-block; padding: 3px 10px; border-radius: 12px; font-size: 13px; font-weight: 600; }
     .yesil { background: #dff5e7; color: #1f7a4d; }
     .sari  { background: #fdf3dd; color: #8a5a00; }
@@ -35,8 +36,17 @@
     {% if session.get("ad") %}<span>{{ session["ad"] }} · <a href="{{ url_for('cikis') }}">Çıkış</a></span>{% endif %}
   </div>
   <div class="icerik">
-    {% for mesaj in get_flashed_messages() %}
-      <div class="hata">{{ mesaj }}</div>
+    {% for kategori, mesaj in get_flashed_messages(with_categories=true) %}
+      {% if kategori == "kural" %}
+        {# Veritabanının reddettiği işlem: hata değil, bir veri bütünlüğü kuralı #}
+        {% set parcalar = mesaj.split("||") %}
+        <div class="kural">
+          <b>⚠ Veri bütünlüğü kuralı:</b> {{ parcalar[0] }}
+          <div class="soluk">Bu kuralı veritabanı uyguladı. Veritabanı mesajı: <code>{{ parcalar[1] }}</code></div>
+        </div>
+      {% else %}
+        <div class="hata">{{ mesaj }}</div>
+      {% endif %}
     {% endfor %}
     {% block icerik %}{% endblock %}
   </div>

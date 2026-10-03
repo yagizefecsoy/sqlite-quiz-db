@@ -12,10 +12,16 @@ veritabanında tanımlıdır. Arayüz sadece SQL çalıştırır, veritabanı bi
 işlemi reddederse hata mesajını ekranda gösterir.
 
 Çalıştırma:  python app.py   ->   tarayıcıda http://127.0.0.1:5000
+
+Açılışta: süren quiz 10 dakikadan uzun süredir açıksa örnek veri "bayat"
+sayılır ve seed.py ile yeniden kurulur (ayrıntı: bayat_veriyi_tazele).
 """
 
 import hashlib
+import os
 import sqlite3
+import subprocess
+import sys
 
 from flask import Flask, flash, redirect, render_template, request, session, url_for
 
@@ -23,6 +29,17 @@ app = Flask(__name__)
 app.secret_key = "quiz-projesi-gizli-anahtar"   # oturum (giriş) bilgisini imzalamak için
 
 VERITABANI = "quiz.db"
+BAYAT_ESIGI_SN = 600   # süren quiz 10 dakikadan uzun süredir açıksa örnek veri bayat sayılır
+
+# Veritabanının reddettiği işlemler için ekranda gösterilecek açıklamalar.
+# (hata mesajında geçen ifade, kullanıcıya gösterilecek açıklama)
+KURAL_ACIKLAMALARI = [
+    ("oturumlar.durum",        "Aynı anda yalnızca bir quiz sürebilir. Önce süren quizi bitirin."),
+    ("Oturum aktif degil",     "Quiz şu an sürmüyor: cevap kaydedilemez ya da değiştirilemez."),
+    ("Oturum bitmis",          "Bitmiş bir quize katılınamaz."),
+    ("Gecersiz durum gecisi",  "Quiz durumu yalnızca ileri gidebilir: başlamadı → sürüyor → bitti."),
+    ("katilimlar.kullanici_id", "Bu quize zaten katıldınız."),
+]
 
 
 def baglan():
@@ -39,15 +56,23 @@ def sifre_dogru_mu(sifre, sifre_hash, sifre_salt):
     return ozet.hex() == sifre_hash
 
 
+def kural_aciklamasi(hata_metni):
+    """Veritabanının hata mesajına uyan Türkçe açıklamayı bulur."""
+    for ifade, aciklama in KURAL_ACIKLAMALARI:
+        if ifade in hata_metni:
+            return aciklama
+    return "Bu işlem veri bütünlüğü kurallarına aykırı olduğu için reddedildi."
+
+
 def islem_yap(sql, degerler):
-    """Veriyi değiştiren bir SQL çalıştırır. Veritabanı reddederse
-    hata mesajını ekranda göstermek üzere flash() ile saklar."""
+    """Veriyi değiştiren bir SQL çalıştırır. Veritabanı reddederse, ekranda
+    sarı 'kural' kutusunda göstermek üzere açıklama + asıl mesajı saklar."""
     baglanti = baglan()
     try:
         baglanti.execute(sql, degerler)
         baglanti.commit()
     except sqlite3.Error as hata:
-        flash(f"Veritabanı işlemi reddetti: {hata}")
+        flash(kural_aciklamasi(str(hata)) + "||" + str(hata), "kural")
     baglanti.close()
 
 
@@ -82,6 +107,12 @@ def canli():
 # ---------------------------------------------------------------------
 @app.route("/", methods=["GET", "POST"])
 def giris():
+    # Zaten giriş yapmış kullanıcı kendi sayfasına gider
+    if request.method == "GET" and session.get("rol") == "hoca":
+        return redirect(url_for("hoca"))
+    if request.method == "GET" and session.get("rol") == "ogrenci":
+        return redirect(url_for("ogrenci"))
+
     if request.method == "POST":
         baglanti = baglan()
         kullanici = baglanti.execute(
@@ -309,5 +340,33 @@ def sonuc(oturum_id):
     return render_template("sonuc.html", oturum=oturum, ozet=ozet, sonuclar=sonuclar)
 
 
+# ---------------------------------------------------------------------
+# AÇILIŞTA BAYAT VERİ KONTROLÜ
+# ---------------------------------------------------------------------
+def bayat_veriyi_tazele():
+    """Örnek veride bir quiz 'sürüyor' olarak bırakılır. seed.py'den günler sonra
+    açılırsa bu quiz günlerdir sürüyor görünür. Bu yüzden açılışta bir kez bakılır:
+    quiz.db yoksa ya da süren quiz 10 dakikadan uzun süredir açıksa seed.py çalıştırılır.
+    Uygulama çalışırken bir daha kontrol edilmez, yapılan işlemler korunur."""
+    if not os.path.exists(VERITABANI):
+        print("quiz.db bulunamadı, örnek veri kuruluyor (python seed.py)...")
+        subprocess.run([sys.executable, "seed.py"], check=True)
+        return
+
+    baglanti = baglan()
+    oturum = baglanti.execute(
+        "SELECT kod, gecen_sure_sn FROM v_oturum_durumu WHERE durum = 'suruyor'"
+    ).fetchone()
+    baglanti.close()
+
+    if oturum and oturum["gecen_sure_sn"] > BAYAT_ESIGI_SN:
+        dakika = oturum["gecen_sure_sn"] // 60
+        print(f"Süren quiz ({oturum['kod']}) {dakika // 60} saat {dakika % 60} dakikadır "
+              "açık görünüyordu: örnek veri bayat.")
+        print("Örnek veri yeniden kuruluyor (python seed.py)...")
+        subprocess.run([sys.executable, "seed.py"], check=True)
+
+
 if __name__ == "__main__":
+    bayat_veriyi_tazele()
     app.run(debug=True)

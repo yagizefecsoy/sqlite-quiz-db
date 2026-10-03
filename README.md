@@ -11,6 +11,29 @@ Derste kullanılan quiz sisteminin veri katmanı: kullanıcılar, quiz oturumlar
 
 ---
 
+## Hızlı inceleme
+
+Proje klasöründe:
+
+```bash
+pip install -r requirements.txt
+python testler.py
+python app.py
+```
+
+1. **`python testler.py`** → 29 veri bütünlüğü kontrolü, hepsi `[OK]`. Veritabanı değişmez.
+2. **`python app.py`** → tarayıcıda **http://127.0.0.1:5000**. Deneme hesapları giriş sayfasında yazılıdır (hoca: `hoca@okul.edu.tr` / `hoca123`).
+3. **Hoca panelinde beklenen görüntü:** 60 öğrenci, 5 oturum, 100 soru · w01-s01..s03 **bitti**, w02-s01 **sürüyor** (54 öğrencinin canlı ilerlemesiyle), w02-s02 **başlamadı** · ilk 10 sıralaması.
+4. **Canlı akış:** Öğrenciyi aynı anda görmek için ikinci bir sekmede **http://localhost:5000** açıp `20240019@ogrenci.edu.tr` / `ogrenci123` ile girin. Hoca **Bitir / Başlat** dedikçe öğrenci ekranı 1 sn içinde değişir; öğrenci cevap verdikçe hoca paneli güncellenir.
+
+**Bilerek böyle tasarlanan davranışlar**
+
+- **Süren quizin süresi:** Örnek veride w02-s01, `seed.py` çalıştığı andan 90 sn önce başlamış olarak kurulur ve süre o andan beri işler. `python app.py` açılışta bunu kontrol eder: süren quiz **10 dakikadan uzun** süredir açıksa veri bayat sayılır ve `seed.py` ile yeniden kurulur (terminalde yazılır). `quiz.db` doğrudan DB Browser'da açılırsa bu kontrol çalışmaz; taze süre için önce `python seed.py` çalıştırın.
+- **3 dakika aşılınca** sayaç uzatmayı gösterir (`3:12 (+12 sn)`), quiz hoca **Bitir** diyene kadar sürer. Gerçek quiz sistemindeki gibi.
+- **Sarı "Veri bütünlüğü kuralı" kutuları hata değildir.** Örneğin bir quiz sürerken ikincisini başlatmak ya da bitmiş quize cevap vermek veritabanı tarafından reddedilir. Kutuda açıklama ve veritabanının asıl mesajı birlikte görünür.
+
+---
+
 ## 1. Dosyalar
 
 | Dosya | İçerik |
@@ -227,16 +250,20 @@ Diğerleri: bitmiş/başlamamış oturuma cevap, bitmiş oturuma katılım, ikin
 
 ## 8. Arayüz (`app.py`)
 
-Küçük bir Flask uygulaması. Bütün kurallar veritabanında olduğu için arayüz yalnızca SQL çalıştırır. Veritabanı bir işlemi reddederse hata mesajı ekranda gösterilir.
+Küçük bir Flask uygulaması. Bütün kurallar veritabanında olduğu için arayüz yalnızca SQL çalıştırır. Veritabanı bir işlemi reddederse ekranda sarı bir **veri bütünlüğü kuralı** kutusu çıkar: Türkçe açıklama + veritabanının asıl mesajı.
 
 | Ekran | Ne yapar? | Karşılığı |
 |---|---|---|
 | Giriş | E-posta + şifre (hash ile doğrulanır), role göre yönlendirir | — |
 | Öğrenci | Süren quize katıl → şıkka tıkla (cevap kaydedilir) → istediğin kadar değiştir. Bitmiş quizlerin sonuçları: `18/20 · %90` | D2, D3/D4 (UPSERT) |
-| Hoca paneli | Kayıt sayıları · oturumlar: durum, zamanlar, süre ve uzatma, **Başlat / Bitir** · canlı takip (5 sn'de bir yenilenir) · ilk 10 | A1, B1, B2, B4, C3, D0/D1/D6 |
+| Hoca paneli | Kayıt sayıları · oturumlar: durum, zamanlar, süre ve uzatma, **Başlat / Bitir** · canlı takip · ilk 10 | A1, B1, B2, B4, C3, D0/D1/D6 |
 | Sonuçlar | Bitmiş oturumun özeti ve öğrenci sonuçları | C1, C2 |
 
-**Demo:** Bir pencerede hoca, ikinci bir pencerede (gizli pencere) öğrenci olarak giriş yapın. Öğrenci cevap verdikçe hoca panelindeki sayılar artar. Hoca **Bitir** dedikten sonra öğrenci cevap değiştirmeye çalışırsa veritabanı reddeder.
+**Canlı (live):** Sayfalar saniyede bir `/canli` adresine küçük bir soru sorar (süren quiz, katılımcı ve cevap sayısı). Bir şey değiştiyse sayfa yenilenir. Hoca **Başlat** deyince quiz öğrencilerin ekranında belirir, **Bitir** deyince kaybolur ve sonuç görünür. Süre sayacı saniye saniye işler.
+
+**Açılış kontrolü:** `python app.py`, süren quiz 10 dakikadan uzun süredir açıksa örnek veriyi `seed.py` ile yeniden kurar (bkz. Hızlı inceleme).
+
+**Demo:** Hoca için http://127.0.0.1:5000, öğrenci için http://localhost:5000 açın. Hoca w02-s01'i bitirip w02-s02'yi başlatır → öğrenci ekranında yeni quiz belirir → öğrenci cevap verdikçe hoca panelindeki sayılar artar.
 
 ---
 
