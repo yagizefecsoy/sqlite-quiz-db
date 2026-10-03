@@ -1,0 +1,263 @@
+<!doctype html>
+<html lang="tr">
+<head>
+<meta charset="utf-8">
+<title>SQLite Quiz Veri Tabanı – Proje Raporu</title>
+<style>
+  @page { size: A4; margin: 18mm 16mm 18mm 16mm; }
+  :root {
+    --ink: #1d2433; --muted: #5b6475; --line: #d5dae3; --soft: #f3f5f9;
+    --accent: #2b5fab; --accent-soft: #e6eefa; --ok: #1f7a4d; --ok-soft: #e3f4ea;
+    --warn: #8a5a00; --warn-soft: #fdf3dd;
+  }
+  * { box-sizing: border-box; }
+  body { font-family: "Segoe UI", Arial, sans-serif; color: var(--ink); font-size: 10.5pt; line-height: 1.5; margin: 0; background: #fff; }
+  h1 { font-size: 22pt; margin: 0 0 4px; color: var(--accent); }
+  h2 { font-size: 14pt; margin: 26px 0 8px; padding-bottom: 4px; border-bottom: 2px solid var(--accent); color: var(--accent); page-break-after: avoid; }
+  h3 { font-size: 11.5pt; margin: 16px 0 6px; page-break-after: avoid; }
+  p { margin: 6px 0; }
+  code { font-family: Consolas, monospace; font-size: 9.5pt; background: var(--soft); padding: 1px 4px; border-radius: 3px; }
+  table { width: 100%; border-collapse: collapse; margin: 8px 0 12px; font-size: 9.5pt; page-break-inside: avoid; }
+  th, td { border: 1px solid var(--line); padding: 5px 7px; text-align: left; vertical-align: top; }
+  th { background: var(--accent-soft); }
+  .kapak { border-left: 6px solid var(--accent); padding: 6px 0 6px 14px; margin-bottom: 18px; }
+  .alt { color: var(--muted); font-size: 10pt; }
+  .kutu { border: 1px solid var(--line); background: var(--soft); border-radius: 6px; padding: 8px 12px; margin: 10px 0; page-break-inside: avoid; }
+  .kutu.ana { border-color: #b9cdea; background: var(--accent-soft); }
+  .kutu.uyari { border-color: #ecd398; background: var(--warn-soft); }
+  .etiket { display: inline-block; font-size: 8.5pt; font-weight: 600; padding: 1px 8px; border-radius: 10px; }
+  .tamam { background: var(--ok-soft); color: var(--ok); }
+  .bekliyor { background: var(--soft); color: var(--muted); }
+  .suruyor { background: var(--warn-soft); color: var(--warn); }
+  .diyagram { text-align: center; margin: 10px 0; page-break-inside: avoid; }
+  .diyagram svg { width: 100%; max-width: 720px; height: auto; }
+  .adim { page-break-before: always; }
+  ol li, ul li { margin: 3px 0; }
+</style>
+</head>
+<body>
+
+<div class="kapak">
+  <h1>SQLite ile Quiz Veri Tabanı</h1>
+  <div class="alt">SQL / Veri Tabanı Dersi – Haftalık Proje Raporu</div>
+  <div class="alt">Hazırlayan: [Ad Soyad] · [Öğrenci No] &nbsp;|&nbsp; Son teslim: 7 Ekim 2026</div>
+</div>
+
+<h2>İlerleme Durumu</h2>
+<table>
+  <tr><th style="width:8%">Adım</th><th>İş</th><th style="width:28%">Çıktı</th><th style="width:14%">Durum</th></tr>
+  <tr><td>0</td><td>Planlama, gereksinim analizi, ortam kurulumu</td><td>Bu rapor, git deposu</td><td><span class="etiket tamam">Tamamlandı</span></td></tr>
+  <tr><td>1</td><td>Veri modeli: tablolar ve ilişkiler</td><td>ER diyagramı (Bölüm 4)</td><td><span class="etiket tamam">Tamamlandı</span></td></tr>
+  <tr><td>2</td><td>Şema: anahtarlar, kısıtlar, indeksler, trigger'lar</td><td><code>schema.sql</code></td><td><span class="etiket bekliyor">Bekliyor</span></td></tr>
+  <tr><td>3</td><td>Örnek veri: 50+ kullanıcı, 5 oturum, 100 soru, cevaplar</td><td><code>seed.py</code>, <code>quiz.db</code></td><td><span class="etiket bekliyor">Bekliyor</span></td></tr>
+  <tr><td>4</td><td>Sorgular: canlı takip, sonuçlar, sıralama, kayıt sayıları</td><td><code>queries.sql</code></td><td><span class="etiket bekliyor">Bekliyor</span></td></tr>
+  <tr><td>5</td><td>Veri bütünlüğü testleri</td><td>Test betiği ve çıktıları</td><td><span class="etiket bekliyor">Bekliyor</span></td></tr>
+  <tr><td>6</td><td>Dokümantasyon</td><td><code>README.md</code></td><td><span class="etiket bekliyor">Bekliyor</span></td></tr>
+  <tr><td>7</td><td>Arayüz (ek puan)</td><td>Flask web uygulaması</td><td><span class="etiket bekliyor">Bekliyor</span></td></tr>
+</table>
+
+<h2>1. Projenin Amacı ve Hedefleri</h2>
+<p>Derste kullanılan quiz sisteminin veri katmanını SQLite üzerinde kurmak: kullanıcıların katılımını, soruları, cevapları ve oturumların ilerleyişini tutarlı biçimde saklamak.</p>
+<table>
+  <tr><th>Hedef (ödev)</th><th>Projedeki karşılığı</th></tr>
+  <tr><td>En az 50 kullanıcı</td><td>Betikle üretilen öğrenci kayıtları + 1 hoca hesabı</td></tr>
+  <tr><td>5 oturum, en az 100 farklı soru</td><td>5 quiz oturumu × 20 soru = 100 soru</td></tr>
+  <tr><td>Cevaplar kullanıcı, oturum ve soruya bağlı</td><td><code>cevaplar</code> tablosunda üç yabancı anahtar</td></tr>
+  <tr><td>Oturum durumları ve zamanları, SQL ile izlenebilir ilerleme</td><td><code>baslamadi → suruyor → bitti</code>, başlangıç/bitiş zamanları, canlı takip sorgusu</td></tr>
+</table>
+
+<h2>2. Mevcut Sistemin Analizi ve Tasarım Kararları</h2>
+<h3>2.1 Gerçek quiz sisteminin özellikleri</h3>
+<ul>
+  <li>Quizler haftalara göre gruplanır; her hafta birkaç <b>Session</b> (oturum) vardır. Örnek kod: <code>w02-s01</code>.</li>
+  <li>Her quiz 5 adet çoktan seçmeli (A/B/C/D) sorudan oluşur.</li>
+  <li>Sonuç puan olarak değil, yüzde olarak gösterilir: <i>“5/5 · %100”</i>.</li>
+  <li>Quiz açıkken sorular arasında geçiş ve cevap değiştirme serbesttir.</li>
+  <li>Resmî süre 3 dakikadır; hoca quizi elle başlatıp bitirir. Süre aşılırsa sayaç aşımı (+1, +10, +30 sn…) gösterir.</li>
+  <li>Her öğrencinin kayıtlı bir e-postası ve şifresi vardır.</li>
+</ul>
+
+<h3>2.2 “Oturum” kavramının yorumu</h3>
+<div class="kutu ana">
+  <b>Karar:</b> Bir <b>oturum</b> = gerçek sistemdeki tek bir <b>Session</b>, yani hocanın başlatıp bitirdiği tek bir quiz.
+</div>
+<p>Gerçek sistemde quizler 5 sorudan oluşur; ancak ödev 5 oturumda toplam en az 100 farklı soru istemektedir (5 × 5 = 25 soru hedefi karşılamaz). Bu nedenle veri modeli gerçek sistemle aynı tutulmuş, yalnızca oturum başına soru sayısı <b>20</b>'ye çıkarılmıştır. Modelde soru sayısı için bir üst sınır yoktur; sayı değişirse yalnızca örnek veri betiği değişir.</p>
+<div class="kutu uyari">Bu yorum ders hocasına e-posta ile danışılmıştır; yanıt geldiğinde bu bölüm güncellenecektir.</div>
+
+<h3>2.3 Puanlama kuralı</h3>
+<ul>
+  <li><b>Oturum yüzdesi</b> = doğru cevap sayısı ÷ oturumdaki soru sayısı × 100.</li>
+  <li>Yanlış cevap ve boş soru <b>0</b> sayılır; eksi puan yoktur.</li>
+  <li>Boş soru için ayrı kayıt tutulmaz: kullanıcının cevap kaydı olmayan soru “boş” kabul edilir.</li>
+  <li>Kullanıcının toplam yüzdesi tabloda <b>saklanmaz</b>; cevaplardan sorguyla hesaplanır (bkz. 5.4).</li>
+</ul>
+
+<h2>3. Teknoloji Seçimi: Neden SQLite?</h2>
+<table>
+  <tr><th></th><th>SQLite</th><th>PostgreSQL / MySQL</th></tr>
+  <tr><td>Mimari</td><td>Gömülü (sunucusuz); motor uygulamanın içinde kütüphane olarak çalışır</td><td>İstemci–sunucu; ayrı bir servis, port üzerinden bağlantı</td></tr>
+  <tr><td>Kurulum</td><td>Tek bir çalıştırılabilir dosya ya da hiçbir şey (Python'da yerleşik)</td><td>Servis, yapılandırma, yönetici hesabı</td></tr>
+  <tr><td>Verinin yeri</td><td>Tek bir <code>.db</code> dosyası</td><td>Sunucunun yönettiği veri dizini</td></tr>
+  <tr><td>Eşzamanlı yazma</td><td>Aynı anda tek yazıcı</td><td>Çok sayıda eşzamanlı yazıcı</td></tr>
+  <tr><td>Kullanıcı/yetki</td><td>Yok (dosya izinleri)</td><td>Ayrıntılı rol ve yetki sistemi</td></tr>
+</table>
+<p>Bir sınıfın quiz sistemi için SQLite yeterlidir; teslimi tek dosya olduğu için kolaydır. Dikkat edilmesi gereken nokta: SQLite'ta yabancı anahtar denetimi varsayılan olarak <b>kapalıdır</b>; her bağlantıda <code>PRAGMA foreign_keys = ON;</code> çalıştırılmalıdır.</p>
+<p><b>Kullanılan araçlar:</b> SQLite 3.53.4 (komut satırı), Python 3 + yerleşik <code>sqlite3</code> modülü, DB Browser for SQLite (görsel inceleme), Git + GitHub (sürüm takibi).</p>
+
+<h2 class="adim">4. Veri Modeli (Adım 1)</h2>
+<h3>4.1 Varlık–İlişki Diyagramı</h3>
+<div class="diyagram">
+<svg viewBox="0 0 760 590" xmlns="http://www.w3.org/2000/svg" font-family="Segoe UI, Arial, sans-serif" font-size="11">
+  <defs>
+    <style>
+      .tb { fill: #ffffff; stroke: #2b5fab; stroke-width: 1.4; }
+      .bas { fill: #2b5fab; }
+      .bt { fill: #ffffff; font-weight: 600; font-size: 12px; }
+      .al { fill: #1d2433; }
+      .pk { fill: #8a5a00; font-weight: 600; }
+      .fk { fill: #1f7a4d; }
+      .ln { stroke: #5b6475; stroke-width: 1.4; fill: none; }
+      .kd { fill: #c0392b; font-weight: 700; font-size: 11px; }
+    </style>
+  </defs>
+
+  <!-- ilişki çizgileri -->
+  <path class="ln" d="M120 220 L120 245 L200 245 L200 270"/>
+  <path class="ln" d="M330 202 L330 245 L300 245 L300 270"/>
+  <path class="ln" d="M430 202 L430 245 L460 245 L460 270"/>
+  <path class="ln" d="M640 202 L640 245 L560 245 L560 270"/>
+  <path class="ln" d="M250 362 L250 395 L330 395 L330 420"/>
+  <path class="ln" d="M510 362 L510 395 L430 395 L430 420"/>
+  <text class="kd" x="126" y="234">1</text><text class="kd" x="206" y="266">N</text>
+  <text class="kd" x="336" y="216">1</text><text class="kd" x="288" y="266">N</text>
+  <text class="kd" x="418" y="216">1</text><text class="kd" x="466" y="266">N</text>
+  <text class="kd" x="646" y="216">1</text><text class="kd" x="548" y="266">N</text>
+  <text class="kd" x="256" y="376">1</text><text class="kd" x="336" y="416">N</text>
+  <text class="kd" x="498" y="376">1</text><text class="kd" x="418" y="416">N</text>
+
+  <!-- kullanicilar -->
+  <rect class="tb" x="20" y="20" width="200" height="200" rx="5"/>
+  <rect class="bas" x="20" y="20" width="200" height="26" rx="5"/>
+  <text class="bt" x="30" y="38">kullanicilar</text>
+  <text class="pk" x="30" y="64">🔑 id</text>
+  <text class="al" x="30" y="82">ogrenci_no  <tspan fill="#5b6475">UNIQUE</tspan></text>
+  <text class="al" x="30" y="100">ad</text>
+  <text class="al" x="30" y="118">soyad</text>
+  <text class="al" x="30" y="136">email  <tspan fill="#5b6475">UNIQUE</tspan></text>
+  <text class="al" x="30" y="154">sifre_hash</text>
+  <text class="al" x="30" y="172">sifre_salt</text>
+  <text class="al" x="30" y="190">rol  <tspan fill="#5b6475">(ogrenci/hoca)</tspan></text>
+  <text class="al" x="30" y="208">kayit_zamani</text>
+
+  <!-- oturumlar -->
+  <rect class="tb" x="280" y="20" width="200" height="182" rx="5"/>
+  <rect class="bas" x="280" y="20" width="200" height="26" rx="5"/>
+  <text class="bt" x="290" y="38">oturumlar</text>
+  <text class="pk" x="290" y="64">🔑 id</text>
+  <text class="al" x="290" y="82">kod  <tspan fill="#5b6475">UNIQUE (w02-s01)</tspan></text>
+  <text class="al" x="290" y="100">baslik</text>
+  <text class="al" x="290" y="118">hafta</text>
+  <text class="al" x="290" y="136">durum</text>
+  <text class="al" x="290" y="154">planlanan_sure_sn  <tspan fill="#5b6475">(180)</tspan></text>
+  <text class="al" x="290" y="172">baslangic</text>
+  <text class="al" x="290" y="190">bitis</text>
+
+  <!-- sorular -->
+  <rect class="tb" x="540" y="20" width="200" height="182" rx="5"/>
+  <rect class="bas" x="540" y="20" width="200" height="26" rx="5"/>
+  <text class="bt" x="550" y="38">sorular</text>
+  <text class="pk" x="550" y="64">🔑 id</text>
+  <text class="al" x="550" y="82">metin</text>
+  <text class="al" x="550" y="100">secenek_a</text>
+  <text class="al" x="550" y="118">secenek_b</text>
+  <text class="al" x="550" y="136">secenek_c</text>
+  <text class="al" x="550" y="154">secenek_d</text>
+  <text class="al" x="550" y="172">dogru_cevap  <tspan fill="#5b6475">(A/B/C/D)</tspan></text>
+  <text class="al" x="550" y="190">konu</text>
+
+  <!-- katilimlar -->
+  <rect class="tb" x="150" y="270" width="200" height="92" rx="5"/>
+  <rect class="bas" x="150" y="270" width="200" height="26" rx="5"/>
+  <text class="bt" x="160" y="288">katilimlar</text>
+  <text class="pk" x="160" y="314">🔑 kullanici_id <tspan class="fk">→ FK</tspan></text>
+  <text class="pk" x="160" y="332">🔑 oturum_id <tspan class="fk">→ FK</tspan></text>
+  <text class="al" x="160" y="350">katilma_zamani</text>
+
+  <!-- oturum_sorulari -->
+  <rect class="tb" x="410" y="270" width="200" height="92" rx="5"/>
+  <rect class="bas" x="410" y="270" width="200" height="26" rx="5"/>
+  <text class="bt" x="420" y="288">oturum_sorulari</text>
+  <text class="pk" x="420" y="314">🔑 oturum_id <tspan class="fk">→ FK</tspan></text>
+  <text class="pk" x="420" y="332">🔑 soru_id <tspan class="fk">→ FK</tspan></text>
+  <text class="al" x="420" y="350">sira  <tspan fill="#5b6475">UNIQUE / oturum</tspan></text>
+
+  <!-- cevaplar -->
+  <rect class="tb" x="280" y="420" width="200" height="146" rx="5"/>
+  <rect class="bas" x="280" y="420" width="200" height="26" rx="5"/>
+  <text class="bt" x="290" y="438">cevaplar</text>
+  <text class="pk" x="290" y="464">🔑 id</text>
+  <text class="fk" x="290" y="482">kullanici_id  → FK</text>
+  <text class="fk" x="290" y="500">oturum_id  → FK</text>
+  <text class="fk" x="290" y="518">soru_id  → FK</text>
+  <text class="al" x="290" y="536">verilen_cevap  <tspan fill="#5b6475">(A/B/C/D)</tspan></text>
+  <text class="al" x="290" y="554">cevap_zamani</text>
+
+  <!-- açıklama -->
+  <text x="520" y="470" fill="#5b6475" font-size="10">(kullanici_id, oturum_id) → katilimlar</text>
+  <text x="520" y="486" fill="#5b6475" font-size="10">(oturum_id, soru_id) → oturum_sorulari</text>
+  <text x="520" y="502" fill="#5b6475" font-size="10">UNIQUE(kullanici, oturum, soru)</text>
+  <text x="520" y="530" fill="#8a5a00" font-size="10">🔑 birincil anahtar</text>
+  <text x="520" y="546" fill="#1f7a4d" font-size="10">→ FK yabancı anahtar</text>
+</svg>
+</div>
+
+<h3>4.2 Tabloların görevleri</h3>
+<table>
+  <tr><th style="width:20%">Tablo</th><th>Görevi</th><th style="width:38%">Önemli kural</th></tr>
+  <tr><td><b>kullanicilar</b></td><td>Öğrenciler ve hoca: ad, soyad, öğrenci no, e-posta, şifre, rol, kayıt zamanı</td><td>E-posta ve öğrenci no tekrarlanamaz; şifre düz metin değil, <i>hash + salt</i> olarak saklanır</td></tr>
+  <tr><td><b>oturumlar</b></td><td>Her bir quiz (ör. Week 2 · Session 1)</td><td>Durum yalnızca <code>baslamadi</code> / <code>suruyor</code> / <code>bitti</code>; zamanlar durumla tutarlı olmalı</td></tr>
+  <tr><td><b>sorular</b></td><td>Soru bankası: metin, 4 şık, doğru cevap, konu</td><td>Doğru cevap yalnızca A, B, C veya D</td></tr>
+  <tr><td><b>oturum_sorulari</b></td><td>Hangi soru hangi oturumda, kaçıncı sırada</td><td>Aynı soru aynı oturuma iki kez eklenemez; oturum içinde sıra numarası tekildir</td></tr>
+  <tr><td><b>katilimlar</b></td><td>Öğrencinin quize katıldığı an (henüz cevap vermemiş olsa bile)</td><td>Canlı takipte “katıldı ama cevap vermedi” bilgisini sağlar</td></tr>
+  <tr><td><b>cevaplar</b></td><td>Öğrencinin bir soruya verdiği cevap ve zamanı</td><td>Öğrenci–oturum–soru başına tek kayıt; cevap değişince kayıt güncellenir</td></tr>
+</table>
+
+<h3>4.3 İlişkiler</h3>
+<ul>
+  <li><b>oturumlar ↔ sorular: çoka-çok (N:M).</b> Bir oturumda çok soru, bir soru (ileride) birden çok oturumda olabilir. Bu ilişki ara tablo <code>oturum_sorulari</code> ile çözülür ve <code>sira</code> bilgisi bu ara tabloda tutulur.</li>
+  <li><b>kullanicilar ↔ oturumlar: çoka-çok (N:M)</b>, ara tablo <code>katilimlar</code>.</li>
+  <li><b>cevaplar</b>, bir katılıma (kullanıcı + oturum) ve bir oturum–soru eşleşmesine (oturum + soru) bağlıdır. Böylece cevap üç varlığa birden — kullanıcı, oturum, soru — tutarlı biçimde bağlanır.</li>
+</ul>
+
+<h2>5. Tasarım ve Veri Bütünlüğü Kuralları</h2>
+<p>Temel ilke: <b>kurallar uygulama kodunda değil, veritabanının kendisinde</b> uygulanır. Böylece veriye hangi araçla (Python, DB Browser, komut satırı) erişilirse erişilsin hatalı veri girilemez.</p>
+
+<h3>5.1 Ödevin özellikle istediği kurallar</h3>
+<table>
+  <tr><th style="width:36%">Kural</th><th>Nasıl sağlanıyor?</th></tr>
+  <tr><td>Aynı soru aynı oturuma iki kez eklenemez</td><td><code>oturum_sorulari</code> tablosunun birincil anahtarı <code>(oturum_id, soru_id)</code> çiftidir.</td></tr>
+  <tr><td>Cevap, sorunun gerçekten bulunduğu oturuma ait olmalı</td><td><code>cevaplar(oturum_id, soru_id)</code> çifti, <code>oturum_sorulari</code> tablosuna <b>bileşik yabancı anahtar</b> ile bağlıdır. Oturumda olmayan soruya verilen cevabı veritabanı reddeder.</td></tr>
+  <tr><td>Tekrar cevap kaydı oluşamaz</td><td><code>UNIQUE(kullanici_id, oturum_id, soru_id)</code>. Cevap değiştirmek yeni satır eklemez, mevcut satırı günceller (UPSERT).</td></tr>
+  <tr><td>Olmayan kullanıcı / soru için cevap verilemez</td><td>Yabancı anahtarlar + <code>PRAGMA foreign_keys = ON;</code></td></tr>
+</table>
+
+<h3>5.2 Ek iş kuralları</h3>
+<ul>
+  <li><b>Katılmadan cevap verilemez:</b> <code>cevaplar(kullanici_id, oturum_id)</code> → <code>katilimlar</code> bileşik yabancı anahtarı.</li>
+  <li><b>Yalnızca süren oturuma cevap verilir:</b> Oturum <code>suruyor</code> değilse cevap ekleme/güncelleme bir <i>trigger</i> ile reddedilir. Böylece hoca quizi bitirdikten sonra cevap değiştirilemez.</li>
+  <li><b>Durum geçişleri tek yönlüdür:</b> <code>baslamadi → suruyor → bitti</code>; geriye dönüş trigger ile engellenir.</li>
+  <li><b>Zaman tutarlılığı (CHECK):</b> <code>baslamadi</code> ise başlangıç ve bitiş boş; <code>suruyor</code> ise başlangıç dolu, bitiş boş; <code>bitti</code> ise ikisi de dolu ve bitiş ≥ başlangıç.</li>
+  <li><b>Değer kısıtları (CHECK):</b> şıklar ve doğru cevap yalnızca A/B/C/D; rol yalnızca ogrenci/hoca; planlanan süre pozitif.</li>
+</ul>
+
+<h3>5.3 Güvenlik: şifrelerin saklanması</h3>
+<p>Şifreler düz metin olarak saklanmaz. Her kullanıcı için rastgele bir <i>salt</i> üretilir ve şifre, salt ile birlikte tek yönlü bir özet (hash) fonksiyonundan geçirilir (PBKDF2-SHA256). Veritabanı ele geçirilse bile şifrelerin kendisi okunamaz; aynı şifreyi kullanan iki kullanıcının hash'i de farklı olur.</p>
+
+<h3>5.4 Normalizasyon: türetilen bilgi saklanmaz</h3>
+<p>Kullanıcının oturum yüzdesi ve toplam yüzdesi tabloya yazılmaz; her seferinde <code>cevaplar</code> ve <code>sorular</code> tablolarından sorguyla (VIEW) hesaplanır. Ayrıca saklansaydı her cevap değişikliğinde güncellenmesi gerekir, unutulduğunda iki bilgi çelişirdi. Aynı ilkeyle süre aşımı (+1, +10, +30 sn) da saklanmaz: <code>(bitis − baslangic) − planlanan_sure_sn</code> olarak hesaplanır.</p>
+
+<h3>5.5 Canlı takip</h3>
+<p>“Canlı takip” için ayrı bir mekanizma gerekmez: hoca paneli veya sorgu, güncel veriyi belirli aralıklarla yeniden okur. Bir oturumun anlık durumu, katılımcı sayısı, cevaplanan soru sayısı ve geçen süre tek sorguyla izlenebilir.</p>
+
+</body>
+</html>

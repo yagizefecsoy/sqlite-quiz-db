@@ -1,0 +1,16 @@
+# Python
+__pycache__/
+*.pyc
+.venv/
+venv/
+
+# SQLite geçici dosyaları (quiz.db teslim edileceği için takip ediliyor)
+*.db-journal
+*.db-wal
+*.db-shm
+
+# Editör / sistem
+.vscode/
+.idea/
+Thumbs.db
+desktop.ini
