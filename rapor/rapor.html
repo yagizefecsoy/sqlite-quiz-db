@@ -51,7 +51,7 @@
   <tr><td>2</td><td>Şema: anahtarlar, kısıtlar, indeksler, trigger'lar</td><td><code>schema.sql</code></td><td><span class="etiket tamam">Tamamlandı</span></td></tr>
   <tr><td>3</td><td>Örnek veri: 50+ kullanıcı, 5 oturum, 100 soru, cevaplar</td><td><code>seed.py</code>, <code>quiz.db</code></td><td><span class="etiket tamam">Tamamlandı</span></td></tr>
   <tr><td>4</td><td>Sorgular: canlı takip, sonuçlar, sıralama, kayıt sayıları</td><td><code>queries.sql</code></td><td><span class="etiket tamam">Tamamlandı</span></td></tr>
-  <tr><td>5</td><td>Veri bütünlüğü testleri</td><td>Test betiği ve çıktıları</td><td><span class="etiket bekliyor">Bekliyor</span></td></tr>
+  <tr><td>5</td><td>Veri bütünlüğü testleri</td><td><code>testler.py</code></td><td><span class="etiket tamam">Tamamlandı</span></td></tr>
   <tr><td>6</td><td>Dokümantasyon</td><td><code>README.md</code></td><td><span class="etiket bekliyor">Bekliyor</span></td></tr>
   <tr><td>7</td><td>Arayüz (ek puan)</td><td>Flask web uygulaması</td><td><span class="etiket bekliyor">Bekliyor</span></td></tr>
 </table>
@@ -388,6 +388,29 @@
 </table>
 <p><b>Not:</b> Süren oturum, <code>seed.py</code> çalıştırılmadan 90 sn önce başlamış kabul edilir; kimse bitirmezse süre ve uzatma artmaya devam eder (ör. 45 dk sonra uzatma +2492 sn). Gösterimden hemen önce <code>python seed.py</code> çalıştırılmalıdır.</p>
 <p>D akışının sonucu: öğrenci önce B, sonra A dedi → <code>cevaplar</code> tablosunda <b>tek</b> satır, değeri A; oturum bitince sonuç 1 doğru, 19 boş, %5.</p>
+
+<h2 class="adim">9. Veri Bütünlüğü Testleri (Adım 5) – <code>testler.py</code></h2>
+<p>Çalıştırma: <code>python testler.py</code>. Her test kurallara aykırı bir işlem dener ve reddedildiğini doğrular; birkaç test de doğru işlemlerin kabul edildiğini doğrular. Sonunda <code>rollback</code> ile her şey geri alınır, <code>quiz.db</code> değişmez.</p>
+<div class="kutu ana"><b>Sonuç: 29 kontrolün 29'u beklendiği gibi.</b></div>
+<table>
+  <tr><th style="width:44%">Denenen işlem</th><th>Sonuç</th><th style="width:22%">Engelleyen</th></tr>
+  <tr><td colspan="3"><b>Ödevin açıkça istedikleri</b></td></tr>
+  <tr><td>Olmayan kullanıcı adına cevap</td><td>Reddedildi</td><td>FOREIGN KEY</td></tr>
+  <tr><td>Olmayan soruya cevap</td><td>Reddedildi</td><td>FOREIGN KEY</td></tr>
+  <tr><td>Oturumda bulunmayan soruya cevap</td><td>Reddedildi</td><td>Bileşik FK</td></tr>
+  <tr><td>Aynı soruya ikinci cevap satırı (tekrar kayıt)</td><td>Reddedildi</td><td>UNIQUE</td></tr>
+  <tr><td>Aynı soruya cevap değiştirme (UPSERT)</td><td>Kabul – yine tek satır</td><td>—</td></tr>
+  <tr><td colspan="3"><b>Ek kurallar</b></td></tr>
+  <tr><td>Katılmamış kullanıcının cevabı</td><td>Reddedildi</td><td>Bileşik FK</td></tr>
+  <tr><td>Bitmiş / başlamamış oturuma cevap, bitmiş oturumda cevap değiştirme</td><td>Reddedildi</td><td>Trigger</td></tr>
+  <tr><td>Bitmiş oturuma katılım, aynı oturuma ikinci katılım</td><td>Reddedildi</td><td>Trigger / PK</td></tr>
+  <tr><td>Aynı soru ya da aynı sıra no bir oturumda iki kez</td><td>Reddedildi</td><td>PK / UNIQUE</td></tr>
+  <tr><td>Cevapları olan soruyu silme</td><td>Reddedildi</td><td>FOREIGN KEY</td></tr>
+  <tr><td>İkinci oturumu başlatma, durumu geri alma</td><td>Reddedildi</td><td>Kısmi UNIQUE / Trigger</td></tr>
+  <tr><td>Bitişsiz “bitti”, bitişi başlangıçtan önce, geçersiz durum</td><td>Reddedildi</td><td>CHECK</td></tr>
+  <tr><td>Tekrarlanan e-posta (büyük harfle bile), öğrenci no, oturum kodu</td><td>Reddedildi</td><td>UNIQUE (NOCASE)</td></tr>
+  <tr><td>Numarasız öğrenci, geçersiz e-posta, geçersiz şık</td><td>Reddedildi</td><td>CHECK</td></tr>
+</table>
 
 </body>
 </html>
