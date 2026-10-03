@@ -49,7 +49,7 @@
   <tr><td>0</td><td>Planlama, gereksinim analizi, ortam kurulumu</td><td>Bu rapor, git deposu</td><td><span class="etiket tamam">Tamamlandı</span></td></tr>
   <tr><td>1</td><td>Veri modeli: tablolar ve ilişkiler</td><td>ER diyagramı (Bölüm 4)</td><td><span class="etiket tamam">Tamamlandı</span></td></tr>
   <tr><td>2</td><td>Şema: anahtarlar, kısıtlar, indeksler, trigger'lar</td><td><code>schema.sql</code></td><td><span class="etiket tamam">Tamamlandı</span></td></tr>
-  <tr><td>3</td><td>Örnek veri: 50+ kullanıcı, 5 oturum, 100 soru, cevaplar</td><td><code>seed.py</code>, <code>quiz.db</code></td><td><span class="etiket bekliyor">Bekliyor</span></td></tr>
+  <tr><td>3</td><td>Örnek veri: 50+ kullanıcı, 5 oturum, 100 soru, cevaplar</td><td><code>seed.py</code>, <code>quiz.db</code></td><td><span class="etiket tamam">Tamamlandı</span></td></tr>
   <tr><td>4</td><td>Sorgular: canlı takip, sonuçlar, sıralama, kayıt sayıları</td><td><code>queries.sql</code></td><td><span class="etiket bekliyor">Bekliyor</span></td></tr>
   <tr><td>5</td><td>Veri bütünlüğü testleri</td><td>Test betiği ve çıktıları</td><td><span class="etiket bekliyor">Bekliyor</span></td></tr>
   <tr><td>6</td><td>Dokümantasyon</td><td><code>README.md</code></td><td><span class="etiket bekliyor">Bekliyor</span></td></tr>
@@ -297,6 +297,55 @@
   <tr><td>bitti → suruyor geri dönüş</td><td>Reddedildi (trigger)</td></tr>
   <tr><td>Bitmiş oturumda cevap değiştirme</td><td>Reddedildi (trigger)</td></tr>
 </table>
+
+<h2 class="adim">7. Örnek Veri (Adım 3) – <code>seed.py</code></h2>
+<p>Çalıştırma: <code>python seed.py</code> → <code>quiz.db</code> silinir, <code>schema.sql</code> ile yeniden kurulur ve veri eklenir (~2 sn). Sabit rastgelelik tohumu (<code>random.seed(42)</code>) sayesinde her çalıştırmada aynı veri oluşur.</p>
+
+<h3>7.1 Akış</h3>
+<div class="diyagram">
+<svg viewBox="0 0 720 70" xmlns="http://www.w3.org/2000/svg" font-family="Segoe UI, Arial, sans-serif" font-size="11">
+  <defs><marker id="ok" markerWidth="8" markerHeight="8" refX="7" refY="4" orient="auto"><path d="M0,0 L8,4 L0,8 z" fill="#5b6475"/></marker></defs>
+  <g fill="#e6eefa" stroke="#2b5fab">
+    <rect x="2" y="15" width="100" height="40" rx="5"/><rect x="122" y="15" width="100" height="40" rx="5"/>
+    <rect x="242" y="15" width="100" height="40" rx="5"/><rect x="362" y="15" width="110" height="40" rx="5"/>
+    <rect x="492" y="15" width="110" height="40" rx="5"/><rect x="622" y="15" width="96" height="40" rx="5"/>
+  </g>
+  <g fill="#1d2433" text-anchor="middle">
+    <text x="52" y="32">schema.sql</text><text x="52" y="46">ile kur</text>
+    <text x="172" y="32">1 hoca +</text><text x="172" y="46">60 öğrenci</text>
+    <text x="292" y="32">5 oturum</text><text x="292" y="46">(baslamadi)</text>
+    <text x="417" y="32">100 soru (CSV)</text><text x="417" y="46">20'şer oturuma</text>
+    <text x="547" y="32">Oturumları</text><text x="547" y="46">oynat</text>
+    <text x="670" y="32">Kayıt</text><text x="670" y="46">sayıları</text>
+  </g>
+  <g stroke="#5b6475" marker-end="url(#ok)">
+    <line x1="102" y1="35" x2="120" y2="35"/><line x1="222" y1="35" x2="240" y2="35"/>
+    <line x1="342" y1="35" x2="360" y2="35"/><line x1="472" y1="35" x2="490" y2="35"/>
+    <line x1="602" y1="35" x2="620" y2="35"/>
+  </g>
+</svg>
+</div>
+
+<h3>7.2 Üretilen veri</h3>
+<table>
+  <tr><th>Tablo</th><th>Kayıt</th><th>Not</th></tr>
+  <tr><td>kullanicilar</td><td>61</td><td>60 öğrenci + 1 hoca; e-posta = öğrenci no (<code>20240001@ogrenci.edu.tr</code>)</td></tr>
+  <tr><td>oturumlar</td><td>5</td><td>3 bitti, 1 sürüyor, 1 başlamadı</td></tr>
+  <tr><td>sorular</td><td>100</td><td>SQL konulu, <code>sorular.csv</code> dosyasından; doğru şıklar A/B/C/D arasında eşit dağıtıldı</td></tr>
+  <tr><td>oturum_sorulari</td><td>100</td><td>Her oturuma 20 soru, sıra 1–20</td></tr>
+  <tr><td>katilimlar</td><td>~210</td><td>Öğrencilerin ~%90'ı katılır</td></tr>
+  <tr><td>cevaplar</td><td>~3300</td><td>Soruların ~%8'i boş bırakılır; bazı cevaplar sonradan değiştirilir (UPSERT)</td></tr>
+</table>
+
+<h3>7.3 Önemli noktalar</h3>
+<ul>
+  <li><b>Gerçek akış izlenir:</b> oturum <code>baslamadi</code> olarak eklenir → başlatılır → cevaplar girilir → bitirilir. Bitmiş oturuma doğrudan cevap eklenemediği (trigger) için başka yol yoktur.</li>
+  <li><b>Gerçekçi sonuçlar:</b> her öğrencinin %40–95 arası bir başarı oranı vardır; doğru/yanlış cevap buna göre seçilir.</li>
+  <li><b>Süre aşımı:</b> bitmiş oturumlarda bitiş, 180 sn'ye +10 / +0 / +30 sn eklenerek oluşturulur.</li>
+  <li><b>Canlı oturum:</b> 4. oturum, betik çalıştığı andan 90 sn önce başlamış gibi kurulur; öğrenciler 0–14 soruya ulaşmıştır.</li>
+  <li><b>Şifreler:</b> <code>hashlib.pbkdf2_hmac</code> + her kullanıcıya özel 16 baytlık rastgele salt. Deneme şifreleri: öğrenci <code>ogrenci123</code>, hoca <code>hoca123</code>.</li>
+  <li><b>SQL enjeksiyonuna karşı:</b> tüm değerler <code>?</code> yer tutucularıyla gönderilir, metin birleştirme ile sorgu kurulmaz.</li>
+</ul>
 
 </body>
 </html>
