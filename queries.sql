@@ -52,6 +52,8 @@ ORDER BY o.id;
 -- B. CANLI TAKİP
 -- "Canlı" = sorgu her çalıştırıldığında güncel veriyi yeniden okur.
 -- Süren oturum, durum = 'suruyor' koşuluyla kendiliğinden bulunur.
+-- NOT: seed.py sonrası süren quiz YOKTUR, bu yüzden B2-B4 boş döner.
+-- Denemek için önce bir quiz başlatın: arayüzde "Başlat" ya da aşağıdaki D1.
 -- =====================================================================
 
 -- B1. Tüm oturumların durumu, geçen süre ve 3 dakikayı aşan uzatma
@@ -187,15 +189,10 @@ LIMIT 5;
 -- D. AKIŞ DENEMESİ (veriyi DEĞİŞTİRİR, başa dönmek için: python seed.py)
 -- Başlamamış oturum w02-s02 (id = 5) üzerinde tam bir quiz akışı:
 -- öğrenci: id = 2 (20240001), soru: id = 81 (w02-s02'nin 1. sorusu, doğru cevap A)
--- Aynı anda tek oturum sürebildiği için önce süren w02-s01 bitirilir.
+-- Canlı takibi görmek için adımların arasında B1 ve B2'yi tekrar çalıştırın.
 -- =====================================================================
 
--- D0. Hoca süren oturumu (w02-s01) bitirir
-UPDATE oturumlar
-SET durum = 'bitti', bitis = datetime('now', 'localtime')
-WHERE kod = 'w02-s01';
-
--- D1. Hoca yeni oturumu başlatır
+-- D1. Hoca oturumu başlatır
 UPDATE oturumlar
 SET durum = 'suruyor', baslangic = datetime('now', 'localtime')
 WHERE kod = 'w02-s02';

@@ -6,7 +6,7 @@ Yaptıkları (sırasıyla):
   2. 1 hoca + 60 öğrenci ekler (şifreler hash + salt ile saklanır)
   3. 5 oturum ekler
   4. sorular.csv dosyasındaki 100 soruyu ekler ve oturumlara 20'şer bağlar
-  5. Oturumları oynatır: 3'ü bitmiş, 1'i sürüyor, 1'i başlamamış
+  5. Oturumları oynatır: 4'ü bitmiş, 1'i başlamamış (süren quiz yok)
   6. Kayıt sayılarını ekrana yazar
 
 Çalıştırma:  python seed.py
@@ -203,15 +203,16 @@ def cevapla(ogrenci_id, oturum_id, soru_id, cevap, zaman):
     )
 
 
-# --- 5a) İlk 3 oturum: başladı, cevaplandı, bitti ---
+# --- 5a) İlk 4 oturum: başladı, cevaplandı, bitti ---
 # Bitişe eklenecek uzatma (saniye). Şimdilik hepsi tam 3 dakika (uzatma yok).
-# Hoca süreyi aşsaydı buraya ör. [10, 0, 30] yazılırdı.
-uzatmalar = [0, 0, 0]
-baslangiclar = [datetime(2026, 9, 25, 10, 0, 0),
-                datetime(2026, 9, 25, 10, 20, 0),
-                datetime(2026, 9, 25, 10, 40, 0)]
+# Hoca süreyi aşsaydı buraya ör. [10, 0, 30, 0] yazılırdı.
+uzatmalar = [0, 0, 0, 0]
+baslangiclar = [datetime(2026, 9, 25, 10, 0, 0),     # Week 1 · Session 1
+                datetime(2026, 9, 25, 10, 20, 0),    # Week 1 · Session 2
+                datetime(2026, 9, 25, 10, 40, 0),    # Week 1 · Session 3
+                datetime(2026, 10, 2, 10, 0, 0)]     # Week 2 · Session 1
 
-for i in range(3):
+for i in range(4):
     oturum_id = oturum_idleri[i]
     baslangic = baslangiclar[i]
     bitis = baslangic + timedelta(seconds=180 + uzatmalar[i])
@@ -239,24 +240,9 @@ for i in range(3):
     oturumu_bitir(oturum_id, bitis)
 
 
-# --- 5b) 4. oturum: şu an SÜRÜYOR (canlı takip için) ---
-# 90 saniye önce başlamış gibi; öğrenciler soruların bir kısmına ulaşmış.
-oturum_id = oturum_idleri[3]
-baslangic = datetime.now().replace(microsecond=0) - timedelta(seconds=90)
-oturumu_baslat(oturum_id, baslangic)
-sorular_listesi = oturum_sorulari(oturum_id)
-
-for ogrenci_id in ogrenci_idleri:
-    if random.random() > 0.85:              # öğrencilerin ~%15'i henüz katılmadı
-        continue
-    katil(ogrenci_id, oturum_id, baslangic + timedelta(seconds=random.randint(0, 20)))
-
-    ulasilan_soru = random.randint(0, 14)   # katılıp hiç cevap vermemiş olan da var (0)
-    for soru_id, dogru_cevap in sorular_listesi[:ulasilan_soru]:
-        zaman = baslangic + timedelta(seconds=random.randint(20, 89))
-        cevapla(ogrenci_id, oturum_id, soru_id, cevap_sec(ogrenci_id, dogru_cevap), zaman)
-
-# --- 5c) 5. oturum: BAŞLAMADI (sadece soruları atanmış durumda) ---
+# --- 5b) 5. oturum: BAŞLAMADI (sadece soruları atanmış durumda) ---
+# Süren quiz bilerek bırakılmaz: quiz, hoca arayüzden "Başlat" deyince
+# (ya da queries.sql D1 çalışınca) o an başlar ve süre 0:00'dan sayılır.
 
 baglanti.commit()
 
