@@ -7,7 +7,7 @@ Derste kullanılan quiz sisteminin veri katmanı: kullanıcılar, quiz oturumlar
 | En az 50 kullanıcı | 60 öğrenci + 1 hoca |
 | 5 oturum, en az 100 farklı soru | 5 oturum × 20 soru = 100 soru |
 | Cevaplar kullanıcı, oturum ve soruya bağlı | 3 yabancı anahtar (2 bileşik) |
-| Başlamamış / süren / bitmiş oturumlar ve zamanları | 4 bitti, 1 başlamadı; süren quiz hoca başlatınca oluşur |
+| Başlamamış / süren / bitmiş oturumlar ve zamanları | 3 bitti, 1 sürüyor, 1 başlamadı |
 
 ---
 
@@ -55,7 +55,7 @@ Arayüzü başlatır → tarayıcıda **http://127.0.0.1:5000** (durdurmak için
 
 > **Notlar**
 > - `seed.py` çalışmadan önce DB Browser kapatılmalıdır (Windows açık dosyanın silinmesine izin vermez).
-> - `seed.py` sonrası **süren quiz yoktur** (gerçek sistemde dersten önceki an gibi). Quiz, hoca arayüzde **Başlat** deyince (ya da `queries.sql` D1) başlar ve süre 0:00'dan sayılır. Bu yüzden `queries.sql`'deki B2–B4 bir quiz başlatılana kadar boş döner.
+> - Süren oturum (w02-s01), `seed.py` çalıştırılmadan 90 sn önce başlamış kabul edilir. Kimse bitirmezse geçen süre ve uzatma artmaya devam eder. Gösterimden hemen önce `python seed.py` çalıştırın.
 > - `queries.sql`'in **D bölümü** veriyi değiştirir. DB Browser'da **Revert Changes** ile ya da `python seed.py` ile geri alınır.
 
 ---
@@ -190,8 +190,8 @@ SELECT COUNT(DISTINCT soru_id) AS farkli_soru_sayisi FROM oturum_sorulari;
 | oturumlar | 5 |
 | sorular | 100 |
 | oturum_sorulari | 100 |
-| katilimlar | 213 |
-| cevaplar | 3914 |
+| katilimlar | 211 |
+| cevaplar | 3305 |
 | **farklı soru (oturumlara atanmış)** | **100** |
 
 ---
@@ -203,7 +203,7 @@ SELECT COUNT(DISTINCT soru_id) AS farkli_soru_sayisi FROM oturum_sorulari;
 | **A. Kayıt sayıları** | A1 tablo sayıları · A2 farklı soru sayısı · A3 oturum başına soru |
 | **B. Canlı takip** | B1 tüm oturumların durumu, geçen süre, uzatma · B2 süren oturumun ilerlemesi (katılımcı, cevap, tamamlanma %) · B3 soru bazında · B4 öğrenci bazında |
 | **C. Sonuçlar** | C1 bir oturumun sonuçları · C2 oturum özetleri (ortalama, en yüksek, en düşük) · C3 en yüksek puanlı 10 kullanıcı · C4 en zor 5 soru |
-| **D. Akış denemesi** | Quizi başlat → katıl → cevapla → cevabı değiştir → bitir → sonuç |
+| **D. Akış denemesi** | Süren quizi bitir → yenisini başlat → katıl → cevapla → cevabı değiştir → bitir → sonuç |
 
 **Canlı takip:** Sorgular süren oturumu `durum = 'suruyor'` koşuluyla kendiliğinden bulur. Sorgu her çalıştırıldığında güncel veriyi yeniden okur.
 
@@ -211,7 +211,7 @@ SELECT COUNT(DISTINCT soru_id) AS farkli_soru_sayisi FROM oturum_sorulari;
 
 ## 7. Veri bütünlüğü testleri (`testler.py`)
 
-31 kontrolün 31'i beklendiği gibi sonuçlanır. Test, w02-s02'yi kendisi başlatır ve öğrenciyi katar; sonunda her şeyi geri alır. Ödevin istedikleri:
+29 kontrolün 29'u beklendiği gibi sonuçlanır. Ödevin istedikleri:
 
 | Denenen işlem | Sonuç |
 |---|---|
@@ -233,12 +233,10 @@ Küçük bir Flask uygulaması. Bütün kurallar veritabanında olduğu için ar
 |---|---|---|
 | Giriş | E-posta + şifre (hash ile doğrulanır), role göre yönlendirir | — |
 | Öğrenci | Süren quize katıl → şıkka tıkla (cevap kaydedilir) → istediğin kadar değiştir. Bitmiş quizlerin sonuçları: `18/20 · %90` | D2, D3/D4 (UPSERT) |
-| Hoca paneli | Kayıt sayıları · oturumlar: durum, zamanlar, süre ve uzatma, **Başlat / Bitir** · canlı takip · ilk 10 | A1, B1, B2, B4, C3, D1/D6 |
+| Hoca paneli | Kayıt sayıları · oturumlar: durum, zamanlar, süre ve uzatma, **Başlat / Bitir** · canlı takip (5 sn'de bir yenilenir) · ilk 10 | A1, B1, B2, B4, C3, D0/D1/D6 |
 | Sonuçlar | Bitmiş oturumun özeti ve öğrenci sonuçları | C1, C2 |
 
-**Canlı (live):** Sayfalar saniyede bir `/canli` adresine küçük bir soru sorar (süren quiz, katılımcı ve cevap sayısı). Bir şey değiştiyse sayfa yenilenir. Hoca **Başlat** deyince quiz öğrencilerin ekranında belirir, **Bitir** deyince kaybolur ve sonuç görünür. Süre sayacı saniye saniye işler, 3 dakika aşılınca uzatmayı gösterir (`3:12 (+12 sn)`).
-
-**Demo:** Hoca için http://127.0.0.1:5000, öğrenci için http://localhost:5000 açın (tarayıcı bunları ayrı site sayar, iki giriş birbirini bozmaz). Hoca w02-s02'yi başlatır → öğrenci ekranında quiz belirir → öğrenci cevap verdikçe hoca panelindeki sayılar artar → hoca **Bitir** der → öğrenci ekranında sonuç görünür.
+**Demo:** Bir pencerede hoca, ikinci bir pencerede (gizli pencere) öğrenci olarak giriş yapın. Öğrenci cevap verdikçe hoca panelindeki sayılar artar. Hoca **Bitir** dedikten sonra öğrenci cevap değiştirmeye çalışırsa veritabanı reddeder.
 
 ---
 
@@ -250,8 +248,8 @@ Küçük bir Flask uygulaması. Bütün kurallar veritabanında olduğu için ar
 |---|---|---|---|---|
 | `oturumlar.durum` | `'baslamadi'` 5–9 bayt | 1 bayt | 5 | ~30 bayt, önemsiz |
 | `kullanicilar.rol` | `'ogrenci'` 4–7 bayt | 0–1 bayt | 61 | ~400 bayt, önemsiz |
-| `cevaplar.verilen_cevap` | `'A'` 1 bayt | 1 bayt | 3914 | Yok, zaten en küçük hâli |
-| Zaman sütunları | `'2026-09-25 10:00:00'` 19 bayt | 4–6 bayt | ~4200 | ~55 KB, tek anlamlı kazanç |
+| `cevaplar.verilen_cevap` | `'A'` 1 bayt | 1 bayt | 3305 | Yok, zaten en küçük hâli |
+| Zaman sütunları | `'2026-09-25 10:00:00'` 19 bayt | 4–6 bayt | ~3600 | ~45 KB, tek anlamlı kazanç |
 
 - En kalabalık tablo (`cevaplar`) zaten verimli. İsraf yalnızca küçük tablolarda var.
 - `TEXT + CHECK (durum IN (...))` enum'un "yalnızca izin verilen değer" güvencesini sağlar.

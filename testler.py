@@ -11,12 +11,12 @@ Sonunda bütün değişiklikler geri alınır (rollback): quiz.db DEĞİŞMEZ.
              python testler.py
 
 Kullanılan kayıtlar (seed.py ile oluşan veriden):
-  oturum 1 = w01-s01 (bitti), oturum 5 = w02-s02 (baslamadi, test sırasında başlatılır)
+  oturum 1 = w01-s01 (bitti), oturum 4 = w02-s01 (suruyor), oturum 5 = w02-s02 (baslamadi)
   kullanıcı 1  = hoca (hiçbir oturuma katılmadı)
   kullanıcı 2  = öğrenci 20240001 (oturum 1'e katıldı, 1. soruyu cevapladı)
   kullanıcı 4  = öğrenci 20240003 (oturum 1'e katılmadı)
-  kullanıcı 20 = öğrenci 20240019 (test sırasında oturum 5'e katılır)
-  soru 1 = oturum 1'in sorusu, soru 81 = oturum 5'in 1. sorusu (doğru cevap A)
+  kullanıcı 20 = öğrenci 20240019 (oturum 4'e katıldı, hiç cevap vermedi)
+  soru 1 = oturum 1'in sorusu, soru 61 = oturum 4'ün 1. sorusu
 """
 
 import sqlite3
@@ -56,24 +56,8 @@ def kabul_edilmeli(aciklama, sql):
 
 
 def sayi(sql):
-    """Tek bir değer döndüren sorguyu çalıştırır."""
+    """Tek bir sayı döndüren sorguyu çalıştırır."""
     return baglanti.execute(sql).fetchone()[0]
-
-
-# ---------------------------------------------------------------------
-print("\n0) HAZIRLIK: quiz başlar, öğrenci katılır")
-# ---------------------------------------------------------------------
-reddedilmeli(
-    "BAŞLAMAMIŞ oturuma cevap",
-    "INSERT INTO cevaplar (kullanici_id, oturum_id, soru_id, verilen_cevap) VALUES (20, 5, 81, 'A')")
-
-kabul_edilmeli(
-    "Hoca başlamamış oturumu (w02-s02) başlatır",
-    "UPDATE oturumlar SET durum = 'suruyor', baslangic = datetime('now', 'localtime') WHERE id = 5")
-
-kabul_edilmeli(
-    "Öğrenci süren oturuma katılır",
-    "INSERT INTO katilimlar (kullanici_id, oturum_id) VALUES (20, 5)")
 
 
 # ---------------------------------------------------------------------
@@ -81,41 +65,41 @@ print("\n1) CEVAPLAR")
 # ---------------------------------------------------------------------
 kabul_edilmeli(
     "Süren oturuma, katılmış öğrencinin, oturumdaki soruya geçerli cevabı",
-    "INSERT INTO cevaplar (kullanici_id, oturum_id, soru_id, verilen_cevap) VALUES (20, 5, 81, 'B')")
+    "INSERT INTO cevaplar (kullanici_id, oturum_id, soru_id, verilen_cevap) VALUES (20, 4, 61, 'B')")
 
 reddedilmeli(
     "Aynı soruya ikinci cevap SATIRI (tekrar kayıt)",
-    "INSERT INTO cevaplar (kullanici_id, oturum_id, soru_id, verilen_cevap) VALUES (20, 5, 81, 'C')")
+    "INSERT INTO cevaplar (kullanici_id, oturum_id, soru_id, verilen_cevap) VALUES (20, 4, 61, 'C')")
 
 kabul_edilmeli(
     "Aynı soruya cevap DEĞİŞTİRME (UPSERT: satır eklenmez, güncellenir)",
-    """INSERT INTO cevaplar (kullanici_id, oturum_id, soru_id, verilen_cevap) VALUES (20, 5, 81, 'A')
+    """INSERT INTO cevaplar (kullanici_id, oturum_id, soru_id, verilen_cevap) VALUES (20, 4, 61, 'A')
        ON CONFLICT (kullanici_id, oturum_id, soru_id) DO UPDATE SET verilen_cevap = excluded.verilen_cevap""")
 
-satir = sayi("SELECT COUNT(*) FROM cevaplar WHERE kullanici_id = 20 AND oturum_id = 5 AND soru_id = 81")
-deger = sayi("SELECT verilen_cevap FROM cevaplar WHERE kullanici_id = 20 AND oturum_id = 5 AND soru_id = 81")
+satir = sayi("SELECT COUNT(*) FROM cevaplar WHERE kullanici_id = 20 AND oturum_id = 4 AND soru_id = 61")
+deger = sayi("SELECT verilen_cevap FROM cevaplar WHERE kullanici_id = 20 AND oturum_id = 4 AND soru_id = 61")
 print(f"         -> kontrol: bu soru için {satir} satır var, değeri '{deger}'")
 sonuclar.append(satir == 1 and deger == "A")
 
 reddedilmeli(
     "Olmayan kullanıcı (id 999) adına cevap",
-    "INSERT INTO cevaplar (kullanici_id, oturum_id, soru_id, verilen_cevap) VALUES (999, 5, 81, 'A')")
+    "INSERT INTO cevaplar (kullanici_id, oturum_id, soru_id, verilen_cevap) VALUES (999, 4, 61, 'A')")
 
 reddedilmeli(
     "Olmayan soruya (id 9999) cevap",
-    "INSERT INTO cevaplar (kullanici_id, oturum_id, soru_id, verilen_cevap) VALUES (20, 5, 9999, 'A')")
+    "INSERT INTO cevaplar (kullanici_id, oturum_id, soru_id, verilen_cevap) VALUES (20, 4, 9999, 'A')")
 
 reddedilmeli(
     "Oturumda BULUNMAYAN soruya cevap (soru 1, oturum 1'in sorusu)",
-    "INSERT INTO cevaplar (kullanici_id, oturum_id, soru_id, verilen_cevap) VALUES (20, 5, 1, 'A')")
+    "INSERT INTO cevaplar (kullanici_id, oturum_id, soru_id, verilen_cevap) VALUES (20, 4, 1, 'A')")
 
 reddedilmeli(
     "Oturuma katılmamış kullanıcının cevabı (hoca, id 1)",
-    "INSERT INTO cevaplar (kullanici_id, oturum_id, soru_id, verilen_cevap) VALUES (1, 5, 81, 'A')")
+    "INSERT INTO cevaplar (kullanici_id, oturum_id, soru_id, verilen_cevap) VALUES (1, 4, 61, 'A')")
 
 reddedilmeli(
     "Geçersiz şık ('E')",
-    "INSERT INTO cevaplar (kullanici_id, oturum_id, soru_id, verilen_cevap) VALUES (20, 5, 82, 'E')")
+    "INSERT INTO cevaplar (kullanici_id, oturum_id, soru_id, verilen_cevap) VALUES (20, 4, 62, 'E')")
 
 reddedilmeli(
     "BİTMİŞ oturuma yeni cevap",
@@ -125,13 +109,17 @@ reddedilmeli(
     "BİTMİŞ oturumda cevap değiştirme",
     "UPDATE cevaplar SET verilen_cevap = 'D' WHERE kullanici_id = 2 AND oturum_id = 1 AND soru_id = 1")
 
+reddedilmeli(
+    "BAŞLAMAMIŞ oturuma cevap",
+    "INSERT INTO cevaplar (kullanici_id, oturum_id, soru_id, verilen_cevap) VALUES (20, 5, 81, 'A')")
+
 
 # ---------------------------------------------------------------------
 print("\n2) KATILIMLAR")
 # ---------------------------------------------------------------------
 reddedilmeli(
     "Aynı öğrencinin aynı oturuma ikinci kez katılması",
-    "INSERT INTO katilimlar (kullanici_id, oturum_id) VALUES (20, 5)")
+    "INSERT INTO katilimlar (kullanici_id, oturum_id) VALUES (20, 4)")
 
 reddedilmeli(
     "BİTMİŞ oturuma katılım",
@@ -147,11 +135,11 @@ print("\n3) OTURUM - SORU İLİŞKİSİ")
 # ---------------------------------------------------------------------
 reddedilmeli(
     "Aynı soruyu aynı oturuma ikinci kez ekleme",
-    "INSERT INTO oturum_sorulari (oturum_id, soru_id, sira) VALUES (5, 81, 21)")
+    "INSERT INTO oturum_sorulari (oturum_id, soru_id, sira) VALUES (4, 61, 21)")
 
 reddedilmeli(
     "Bir oturumda aynı sıra numarasını ikinci kez kullanma",
-    "INSERT INTO oturum_sorulari (oturum_id, soru_id, sira) VALUES (5, 1, 1)")
+    "INSERT INTO oturum_sorulari (oturum_id, soru_id, sira) VALUES (4, 1, 1)")
 
 reddedilmeli(
     "Cevapları olan bir soruyu silme",
@@ -162,9 +150,8 @@ reddedilmeli(
 print("\n4) OTURUM DURUMU VE ZAMANLAR")
 # ---------------------------------------------------------------------
 reddedilmeli(
-    "Bir oturum sürerken ikinci bir süren oturum",
-    """INSERT INTO oturumlar (kod, baslik, hafta, durum, baslangic)
-       VALUES ('w09-s03', 'Deneme', 9, 'suruyor', datetime('now', 'localtime'))""")
+    "Bir oturum sürerken ikinci bir oturumu başlatma",
+    "UPDATE oturumlar SET durum = 'suruyor', baslangic = datetime('now', 'localtime') WHERE id = 5")
 
 reddedilmeli(
     "Durumu geri alma (bitti -> suruyor)",
@@ -172,7 +159,7 @@ reddedilmeli(
 
 reddedilmeli(
     "Bitiş zamanı olmadan 'bitti' durumuna geçme",
-    "UPDATE oturumlar SET durum = 'bitti' WHERE id = 5")
+    "UPDATE oturumlar SET durum = 'bitti' WHERE id = 4")
 
 reddedilmeli(
     "Bitiş zamanı başlangıçtan önce olan oturum",
