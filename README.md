@@ -21,7 +21,7 @@ python testler.py
 python app.py
 ```
 
-1. **`python testler.py`** → 29 veri bütünlüğü kontrolü, hepsi `[OK]`. Veritabanı değişmez.
+1. **`python testler.py`** → 34 veri bütünlüğü kontrolü, hepsi `[OK]`. Veritabanı değişmez.
 2. **`python app.py`** → tarayıcıda **http://127.0.0.1:5000**. Deneme hesapları giriş sayfasında yazılıdır (hoca: `hoca@okul.edu.tr` / `hoca123`).
 3. **Hoca panelinde beklenen görüntü:** 60 öğrenci, 5 oturum, 100 soru · w01-s01..s03 **bitti**, w02-s01 **sürüyor** (49 öğrencinin canlı ilerlemesiyle), w02-s02 **başlamadı** · ilk 10 sıralaması.
 4. **Canlı akış:** Öğrenciyi aynı anda görmek için ikinci bir sekmede **http://localhost:5000** açıp `20240023@ogrenci.edu.tr` / `ogrenci123` ile girin. Hoca **Bitir / Başlat** dedikçe öğrenci ekranı 1 sn içinde değişir; öğrenci cevap verdikçe hoca paneli güncellenir.
@@ -48,7 +48,7 @@ python app.py
 | `seed.py` | Veritabanını sıfırdan kurar ve örnek veriyi oluşturur |
 | `sorular.csv` | `seed.py`'nin okuduğu 100 SQL sorusu (4 şık, doğru cevap, konu) |
 | `queries.sql` | Kayıt sayıları, canlı takip, sonuçlar, puan sıralaması ve akış denemesi |
-| `testler.py` | 29 veri bütünlüğü kontrolü |
+| `testler.py` | 34 veri bütünlüğü kontrolü |
 | `app.py`, `templates/` | Küçük web arayüzü (Flask) |
 | `requirements.txt` | Arayüz için gereken paket (Flask) |
 | `quiz.db` | Çalışan veritabanı (`seed.py` çıktısı) |
@@ -171,6 +171,8 @@ erDiagram
 | Yalnızca süren oturuma cevap verilir / cevap değiştirilir | Trigger'lar |
 | Durum yalnızca ileri gider: `baslamadi → suruyor → bitti` | Trigger |
 | Durum ile zamanlar tutarlı (ör. `bitti` ise bitiş dolu ve ≥ başlangıç) | CHECK |
+| Başlangıç yalnızca başlatılırken, bitiş yalnızca bitirilirken yazılır, sonradan değiştirilemez, gelecekte olamaz | Trigger |
+| Katılım ve cevap zamanı quizin başlangıcından önce ya da gelecekte olamaz | Trigger'lar |
 | Aynı anda tek oturum sürebilir | Kısmi benzersiz indeks `... WHERE durum = 'suruyor'` |
 | E-posta (büyük/küçük harf duyarsız), öğrenci no, oturum kodu tekildir | UNIQUE |
 
@@ -240,7 +242,7 @@ SELECT COUNT(DISTINCT soru_id) AS farkli_soru_sayisi FROM oturum_sorulari;
 
 ## 7. Veri bütünlüğü testleri (`testler.py`)
 
-29 kontrolün 29'u beklendiği gibi sonuçlanır. Ödevin istedikleri:
+34 kontrolün 34'ü beklendiği gibi sonuçlanır. Ödevin istedikleri:
 
 | Denenen işlem | Sonuç |
 |---|---|
@@ -250,7 +252,7 @@ SELECT COUNT(DISTINCT soru_id) AS farkli_soru_sayisi FROM oturum_sorulari;
 | Aynı soruya ikinci cevap satırı | Reddedilir (UNIQUE) |
 | Aynı soruya cevap değiştirme (UPSERT) | Kabul edilir, yine tek satır |
 
-Diğerleri: bitmiş/başlamamış oturuma cevap, bitmiş oturuma katılım, ikinci oturumu başlatma, durumu geri alma, tekrarlanan e-posta/öğrenci no, geçersiz şık/durum/e-posta vb.
+Diğerleri: zaman damgaları (başlangıçtan önce katılım, gelecek tarihli cevap, quiz saatlerini sonradan değiştirme), bitmiş/başlamamış oturuma cevap, bitmiş oturuma katılım, ikinci oturumu başlatma, durumu geri alma, tekrarlanan e-posta/öğrenci no, geçersiz şık/durum/e-posta vb.
 
 ---
 
@@ -300,6 +302,7 @@ Küçük bir Flask uygulaması. Bütün kurallar veritabanında olduğu için ar
 | Kurallar veritabanında (FK, bileşik FK, UNIQUE, CHECK, trigger) | Veriye hangi araçla (Python, DB Browser, komut satırı) erişilirse erişilsin hatalı veri girilemez. Arayüzde kural tekrar yazılmadı. |
 | Cevap değiştirme = UPSERT, quiz bitince trigger ile kilit | Gerçek sistemde quiz açıkken cevap değiştirmek serbest. Öğrenci–soru başına tek satır kalır. |
 | Aynı anda tek quiz (kısmi benzersiz indeks) | Test sırasında iki quizin aynı anda sürebildiği fark edildi ve kapatıldı. |
+| Zaman damgaları trigger'larla korunur | Yönerge "zaman damgaları tutarlı olmalı" diyor. Yönergeyi satır satır kontrol ederken gelecek tarihli cevap ve sonradan değiştirilebilen quiz saatleri gibi açıklar bulundu ve 4 trigger ile kapatıldı. |
 | Puan ve süre saklanmaz, VIEW ile hesaplanır | Türetilen bilgi saklanırsa her cevapta güncellenmesi gerekir, unutulursa çelişir (normalizasyon). |
 | Şifre: PBKDF2-SHA256 + kullanıcıya özel salt | Veritabanı ele geçse bile şifreler okunamaz. |
 | ENUM yerine `TEXT + CHECK` | Yukarıdaki tablo: bu ölçekte kazanç birkaç KB, okunabilirlik daha değerli. |
