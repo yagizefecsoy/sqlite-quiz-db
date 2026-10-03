@@ -28,7 +28,7 @@ python app.py
 
 **Bilerek böyle tasarlanan davranışlar**
 
-- **Süren quizin süresi:** Örnek veride w02-s01, `seed.py` çalıştığı andan 30 sn önce başlamış olarak kurulur ve süre o andan beri işler. `python app.py` açılışta bunu kontrol eder: süren quiz **10 dakikadan uzun** süredir açıksa veri bayat sayılır ve `seed.py` ile yeniden kurulur (terminalde yazılır). `quiz.db` doğrudan DB Browser'da açılırsa bu kontrol çalışmaz; taze süre için önce `python seed.py` çalıştırın.
+- **Süren quizin süresi:** Örnek veride w02-s01, `seed.py` çalıştığı andan 30 sn önce başlamış olarak kurulur ve süre o andan beri işler. `python app.py` açılışta bunu kontrol eder: süren quiz **5 dakikadan uzun** süredir açıksa veri bayat sayılır ve `seed.py` ile yeniden kurulur (terminalde yazılır). `quiz.db` doğrudan DB Browser'da açılırsa bu kontrol çalışmaz; taze süre için önce `python seed.py` çalıştırın.
 - **3 dakika aşılınca** sayaç uzatmayı gösterir (`3:12 (+12 sn)`), quiz hoca **Bitir** diyene kadar sürer. Gerçek quiz sistemindeki gibi.
 - **Sarı "Veri bütünlüğü kuralı" kutuları hata değildir.** Örneğin bir quiz sürerken ikincisini başlatmak ya da bitmiş quize cevap vermek veritabanı tarafından reddedilir. Kutuda açıklama ve veritabanının asıl mesajı birlikte görünür.
 
@@ -78,7 +78,7 @@ Arayüzü başlatır → tarayıcıda **http://127.0.0.1:5000** (durdurmak için
 
 > **Notlar**
 > - `seed.py` çalışmadan önce DB Browser kapatılmalıdır (Windows açık dosyanın silinmesine izin vermez).
-> - Süren oturum (w02-s01), `seed.py` çalıştırılmadan 30 sn önce başlamış kabul edilir. Kimse bitirmezse geçen süre ve uzatma artmaya devam eder; `python app.py` açılışta 10 dakikadan eskiyse veriyi yeniler.
+> - Süren oturum (w02-s01), `seed.py` çalıştırılmadan 30 sn önce başlamış kabul edilir. Kimse bitirmezse geçen süre ve uzatma artmaya devam eder; `python app.py` açılışta 5 dakikadan eskiyse veriyi yeniler.
 > - `queries.sql`'in **D bölümü** veriyi değiştirir. DB Browser'da **Revert Changes** ile ya da `python seed.py` ile geri alınır.
 
 ---
@@ -261,7 +261,7 @@ Küçük bir Flask uygulaması. Bütün kurallar veritabanında olduğu için ar
 
 **Canlı (live):** Sayfalar saniyede bir `/canli` adresine küçük bir soru sorar (süren quiz, katılımcı ve cevap sayısı). Bir şey değiştiyse sayfa yenilenir. Hoca **Başlat** deyince quiz öğrencilerin ekranında belirir, **Bitir** deyince kaybolur ve sonuç görünür. Süre sayacı saniye saniye işler.
 
-**Açılış kontrolü:** `python app.py`, süren quiz 10 dakikadan uzun süredir açıksa örnek veriyi `seed.py` ile yeniden kurar (bkz. Hızlı inceleme).
+**Açılış kontrolü:** `python app.py`, süren quiz 5 dakikadan uzun süredir açıksa örnek veriyi `seed.py` ile yeniden kurar (bkz. Hızlı inceleme).
 
 **Demo:** Hoca için http://127.0.0.1:5000, öğrenci için http://localhost:5000 açın. Hoca w02-s01'i bitirip w02-s02'yi başlatır → öğrenci ekranında yeni quiz belirir → öğrenci cevap verdikçe hoca panelindeki sayılar artar.
 
