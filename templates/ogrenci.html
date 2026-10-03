@@ -1,0 +1,54 @@
+{% extends "base.html" %}
+{% block icerik %}
+
+<h2>Süren quiz</h2>
+{% if not oturum %}
+  <div class="kart soluk">Şu an süren bir quiz yok.</div>
+
+{% elif not katildi %}
+  <div class="kart">
+    <b>{{ oturum["baslik"] }}</b> <span class="soluk">· {{ oturum["kod"] }}</span>
+    <form method="post" action="{{ url_for('katil') }}" style="margin-top: 10px;">
+      <input type="hidden" name="oturum_id" value="{{ oturum['id'] }}">
+      <button type="submit">Quize katıl</button>
+    </form>
+  </div>
+
+{% else %}
+  <div class="kart">
+    <b>{{ oturum["baslik"] }}</b>
+    <span class="rozet sari">Cevaplanan: {{ cevaplar|length }}/{{ sorular|length }}</span>
+    <div class="soluk">Quiz sürerken cevaplarını istediğin kadar değiştirebilirsin. Şıkka tıklamak cevabı kaydeder.</div>
+  </div>
+
+  {% for soru in sorular %}
+  <div class="kart" id="soru{{ soru['sira'] }}">
+    <b>{{ soru["sira"] }}.</b> {{ soru["metin"] }}
+    <form method="post" action="{{ url_for('cevap') }}">
+      <input type="hidden" name="oturum_id" value="{{ oturum['id'] }}">
+      <input type="hidden" name="soru_id" value="{{ soru['id'] }}">
+      <input type="hidden" name="sira" value="{{ soru['sira'] }}">
+      {% for harf in ["A", "B", "C", "D"] %}
+        <label class="sik">
+          <input type="radio" name="cevap" value="{{ harf }}" style="width: auto; margin: 0 6px 0 0;"
+                 {% if cevaplar.get(soru["id"]) == harf %}checked{% endif %}
+                 onchange="this.form.submit()">
+          {{ harf }}) {{ soru["secenek_" ~ harf|lower] }}
+        </label>
+      {% endfor %}
+    </form>
+  </div>
+  {% endfor %}
+{% endif %}
+
+<h2>Sonuçlarım</h2>
+{% for s in sonuclar %}
+  <div class="kart" style="display: flex; justify-content: space-between; align-items: center;">
+    <div><b>{{ s["baslik"] }}</b><div class="soluk">{{ s["kod"] }} · {{ s["bitis"][:10] }}</div></div>
+    <span class="rozet yesil">{{ s["dogru"] }}/{{ s["soru_sayisi"] }} · %{{ "%g"|format(s["yuzde"]) }}</span>
+  </div>
+{% else %}
+  <div class="kart soluk">Henüz bitmiş bir quizin yok.</div>
+{% endfor %}
+
+{% endblock %}

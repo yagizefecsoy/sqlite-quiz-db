@@ -1,0 +1,45 @@
+<!doctype html>
+<html lang="tr">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  {% block ek_head %}{% endblock %}
+  <title>Quiz</title>
+  <style>
+    body   { font-family: "Segoe UI", Arial, sans-serif; background: #f5f6f8; color: #1d2433; margin: 0; }
+    .ust   { background: #2b5fab; color: #fff; padding: 10px 20px; display: flex; justify-content: space-between; }
+    .ust a { color: #fff; }
+    .icerik { max-width: 900px; margin: 20px auto; padding: 0 16px; }
+    .kart  { background: #fff; border: 1px solid #dde1e8; border-radius: 10px; padding: 14px 18px; margin-bottom: 14px; }
+    .soluk { color: #6b7385; font-size: 14px; }
+    .hata  { background: #fdecea; border: 1px solid #f5c2bd; color: #a12a1f; padding: 10px 14px; border-radius: 8px; margin-bottom: 14px; }
+    .rozet { display: inline-block; padding: 3px 10px; border-radius: 12px; font-size: 13px; font-weight: 600; }
+    .yesil { background: #dff5e7; color: #1f7a4d; }
+    .sari  { background: #fdf3dd; color: #8a5a00; }
+    .gri   { background: #eceef2; color: #5b6475; }
+    table  { width: 100%; border-collapse: collapse; font-size: 14px; }
+    th, td { text-align: left; padding: 6px 8px; border-bottom: 1px solid #eceef2; }
+    th     { color: #5b6475; font-weight: 600; }
+    button { background: #2b5fab; color: #fff; border: 0; border-radius: 6px; padding: 6px 14px; cursor: pointer; }
+    button.kirmizi { background: #c0392b; }
+    input  { padding: 8px; border: 1px solid #c9ced8; border-radius: 6px; width: 100%; box-sizing: border-box; margin-bottom: 10px; }
+    .sayilar { display: flex; gap: 12px; flex-wrap: wrap; }
+    .sayilar .kart { flex: 1; text-align: center; margin: 0; min-width: 120px; }
+    .sayilar b { font-size: 24px; display: block; }
+    label.sik { display: block; padding: 4px 6px; border-radius: 6px; cursor: pointer; }
+    label.sik:hover { background: #f0f3f8; }
+  </style>
+</head>
+<body>
+  <div class="ust">
+    <b>SQL Quiz</b>
+    {% if session.get("ad") %}<span>{{ session["ad"] }} · <a href="{{ url_for('cikis') }}">Çıkış</a></span>{% endif %}
+  </div>
+  <div class="icerik">
+    {% for mesaj in get_flashed_messages() %}
+      <div class="hata">{{ mesaj }}</div>
+    {% endfor %}
+    {% block icerik %}{% endblock %}
+  </div>
+</body>
+</html>

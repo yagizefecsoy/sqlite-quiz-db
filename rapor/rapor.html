@@ -53,7 +53,7 @@
   <tr><td>4</td><td>Sorgular: canlı takip, sonuçlar, sıralama, kayıt sayıları</td><td><code>queries.sql</code></td><td><span class="etiket tamam">Tamamlandı</span></td></tr>
   <tr><td>5</td><td>Veri bütünlüğü testleri</td><td><code>testler.py</code></td><td><span class="etiket tamam">Tamamlandı</span></td></tr>
   <tr><td>6</td><td>Dokümantasyon</td><td><code>README.md</code></td><td><span class="etiket tamam">Tamamlandı</span></td></tr>
-  <tr><td>7</td><td>Arayüz (ek puan)</td><td>Flask web uygulaması</td><td><span class="etiket bekliyor">Bekliyor</span></td></tr>
+  <tr><td>7</td><td>Arayüz (ek puan)</td><td><code>app.py</code>, <code>templates/</code></td><td><span class="etiket tamam">Tamamlandı</span></td></tr>
 </table>
 
 <h2>1. Projenin Amacı ve Hedefleri</h2>
@@ -432,6 +432,30 @@
   <tr><td>Tekrarlanan e-posta (büyük harfle bile), öğrenci no, oturum kodu</td><td>Reddedildi</td><td>UNIQUE (NOCASE)</td></tr>
   <tr><td>Numarasız öğrenci, geçersiz e-posta, geçersiz şık</td><td>Reddedildi</td><td>CHECK</td></tr>
 </table>
+
+<h2 class="adim">10. Arayüz (Adım 7) – <code>app.py</code></h2>
+<p>Çalıştırma: <code>pip install -r requirements.txt</code> (bir kez), sonra <code>python app.py</code> → <code>http://127.0.0.1:5000</code>. İlke: <b>küçük ama ödevin her maddesini gösteren</b> bir arayüz.</p>
+
+<h3>10.1 Ödev maddesi → ekran</h3>
+<table>
+  <tr><th style="width:40%">Ödevin istediği</th><th>Arayüzde</th><th style="width:16%">SQL</th></tr>
+  <tr><td>50+ kullanıcı, 5 oturum, 100 soru</td><td>Hoca panelinde sayaçlar</td><td>A1</td></tr>
+  <tr><td>Başlamamış / süren / bitmiş oturum ve zamanlar</td><td>Oturum tablosu, <b>Başlat / Bitir</b>, süre ve uzatma (+sn)</td><td>B1, D0/D1/D6</td></tr>
+  <tr><td>Canlı takip: anlık durum ve ilerleme</td><td>Hoca paneli 5 sn'de bir yenilenir: katılımcı, cevap, tamamlanma %, öğrenci bazında ilerleme</td><td>B2, B4</td></tr>
+  <tr><td>Cevap kaydetme akışı</td><td>Öğrenci: Katıl → şıkka tıkla → değiştir</td><td>D2, D3/D4</td></tr>
+  <tr><td>Oturum sonuçları</td><td>Sonuç sayfası, öğrencinin “Sonuçlarım” listesi (<code>18/20 · %90</code>)</td><td>C1, C2</td></tr>
+  <tr><td>En yüksek puanlı kullanıcılar</td><td>Hoca panelinde ilk 10</td><td>C3</td></tr>
+  <tr><td>Veri bütünlüğü</td><td>Reddedilen işlem ekranda hata mesajı olarak görünür</td><td>Kısıt / trigger</td></tr>
+</table>
+
+<h3>10.2 Önemli noktalar</h3>
+<ul>
+  <li><b>Kurallar veritabanında:</b> arayüzde ayrıca kontrol yazılmadı. Ör. hoca bir quiz sürerken ikincisini başlatmak isterse ya da öğrenci bitmiş quizde cevap değiştirmek isterse veritabanının hata mesajı ekranda görünür.</li>
+  <li><b>Giriş:</b> girilen şifre kayıtlı salt ile hashlenir ve kayıtlı hash ile karşılaştırılır; şifrenin kendisi hiçbir yerde saklanmaz.</li>
+  <li><b>Canlı takip:</b> hoca sayfası <code>&lt;meta http-equiv="refresh" content="5"&gt;</code> ile 5 saniyede bir yeniden yüklenir, sorgular güncel veriyi tekrar okur.</li>
+  <li><b>Yetki:</b> öğrenci hoca sayfalarını açamaz (girişe yönlendirilir).</li>
+  <li><b>Yapı:</b> <code>app.py</code> (~250 satır) + 5 şablon (<code>base</code>, <code>giris</code>, <code>ogrenci</code>, <code>hoca</code>, <code>sonuc</code>). Sorgular <code>queries.sql</code> ile aynıdır.</li>
+</ul>
 
 </body>
 </html>

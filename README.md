@@ -20,6 +20,8 @@ Derste kullanılan quiz sisteminin veri katmanı: kullanıcılar, quiz oturumlar
 | `sorular.csv` | `seed.py`'nin okuduğu 100 SQL sorusu (4 şık, doğru cevap, konu) |
 | `queries.sql` | Kayıt sayıları, canlı takip, sonuçlar, puan sıralaması ve akış denemesi |
 | `testler.py` | 29 veri bütünlüğü kontrolü |
+| `app.py`, `templates/` | Küçük web arayüzü (Flask) |
+| `requirements.txt` | Arayüz için gereken paket (Flask) |
 | `quiz.db` | Çalışan veritabanı (`seed.py` çıktısı) |
 | `rapor/Proje_Raporu.pdf` | Diyagramlar ve tasarım kararlarıyla proje raporu |
 
@@ -27,7 +29,7 @@ Derste kullanılan quiz sisteminin veri katmanı: kullanıcılar, quiz oturumlar
 
 ## 2. Kurulum ve çalıştırma
 
-**Gerekenler:** Python 3.8+ (ek paket gerekmez, `sqlite3` Python ile birlikte gelir). İsteğe bağlı: [DB Browser for SQLite](https://sqlitebrowser.org/dl/) veya `sqlite3` komut satırı aracı.
+**Gerekenler:** Python 3.8+ (`sqlite3` Python ile birlikte gelir). Yalnızca arayüz için Flask: `pip install -r requirements.txt`. İsteğe bağlı: [DB Browser for SQLite](https://sqlitebrowser.org/dl/) veya `sqlite3` komut satırı aracı.
 
 Komutlar proje klasöründe çalıştırılır:
 
@@ -45,6 +47,11 @@ Kurallara aykırı işlemleri dener, reddedildiklerini doğrular, sonunda her ş
 sqlite3 quiz.db ".read queries.sql"
 ```
 Tüm sorguları çalıştırır. DB Browser'da: **Execute SQL** → `queries.sql` dosyasını aç → sorgunun başlık satırına (`-- B1.` gibi) imleci koy → **Shift+F5**.
+
+```bash
+python app.py
+```
+Arayüzü başlatır → tarayıcıda **http://127.0.0.1:5000** (durdurmak için terminalde Ctrl+C).
 
 > **Notlar**
 > - `seed.py` çalışmadan önce DB Browser kapatılmalıdır (Windows açık dosyanın silinmesine izin vermez).
@@ -218,7 +225,22 @@ Diğerleri: bitmiş/başlamamış oturuma cevap, bitmiş oturuma katılım, ikin
 
 ---
 
-## 8. Tasarım tercihleri
+## 8. Arayüz (`app.py`)
+
+Küçük bir Flask uygulaması. Bütün kurallar veritabanında olduğu için arayüz yalnızca SQL çalıştırır. Veritabanı bir işlemi reddederse hata mesajı ekranda gösterilir.
+
+| Ekran | Ne yapar? | Karşılığı |
+|---|---|---|
+| Giriş | E-posta + şifre (hash ile doğrulanır), role göre yönlendirir | — |
+| Öğrenci | Süren quize katıl → şıkka tıkla (cevap kaydedilir) → istediğin kadar değiştir. Bitmiş quizlerin sonuçları: `18/20 · %90` | D2, D3/D4 (UPSERT) |
+| Hoca paneli | Kayıt sayıları · oturumlar: durum, zamanlar, süre ve uzatma, **Başlat / Bitir** · canlı takip (5 sn'de bir yenilenir) · ilk 10 | A1, B1, B2, B4, C3, D0/D1/D6 |
+| Sonuçlar | Bitmiş oturumun özeti ve öğrenci sonuçları | C1, C2 |
+
+**Demo:** Bir pencerede hoca, ikinci bir pencerede (gizli pencere) öğrenci olarak giriş yapın. Öğrenci cevap verdikçe hoca panelindeki sayılar artar. Hoca **Bitir** dedikten sonra öğrenci cevap değiştirmeye çalışırsa veritabanı reddeder.
+
+---
+
+## 9. Tasarım tercihleri
 
 **ENUM ve saklama maliyeti.** Az sayıda sabit değer alan sütunlar metin yerine küçük kodlarla tutulursa yer kazanılır. SQLite'ta ENUM tipi yoktur ve saklama bit değil bayt düzeyindedir.
 
@@ -241,7 +263,7 @@ Diğerleri: bitmiş/başlamamış oturuma cevap, bitmiş oturuma katılım, ikin
 
 ---
 
-## 9. Deneme hesapları
+## 10. Deneme hesapları
 
 Yalnızca örnek veri içindir. Veritabanında şifrelerin yalnızca hash'i bulunur.
 

@@ -1,0 +1,88 @@
+{% extends "base.html" %}
+
+{# Canlı takip: sayfa 5 saniyede bir kendini yeniden yükler, sorgular güncel veriyi tekrar okur #}
+{% block ek_head %}<meta http-equiv="refresh" content="5">{% endblock %}
+
+{% block icerik %}
+
+<div class="sayilar">
+  <div class="kart"><b>{{ sayilar["ogrenci"] }}</b><span class="soluk">öğrenci</span></div>
+  <div class="kart"><b>{{ sayilar["oturum"] }}</b><span class="soluk">oturum</span></div>
+  <div class="kart"><b>{{ sayilar["soru"] }}</b><span class="soluk">farklı soru</span></div>
+  <div class="kart"><b>{{ sayilar["cevap"] }}</b><span class="soluk">cevap</span></div>
+</div>
+
+<h2>Oturumlar</h2>
+<div class="kart">
+  <table>
+    <tr><th>Kod</th><th>Başlık</th><th>Durum</th><th>Başlangıç</th><th>Bitiş</th><th>Süre</th><th></th></tr>
+    {% for o in oturumlar %}
+    <tr>
+      <td>{{ o["kod"] }}</td>
+      <td>{{ o["baslik"] }}</td>
+      <td>
+        {% if o["durum"] == "bitti" %}<span class="rozet yesil">bitti</span>
+        {% elif o["durum"] == "suruyor" %}<span class="rozet sari">sürüyor</span>
+        {% else %}<span class="rozet gri">başlamadı</span>{% endif %}
+      </td>
+      <td>{{ o["baslangic"] or "–" }}</td>
+      <td>{{ o["bitis"] or "–" }}</td>
+      <td>
+        {% if o["gecen_sure_sn"] is not none %}
+          {{ "%d:%02d"|format(o["gecen_sure_sn"] // 60, o["gecen_sure_sn"] % 60) }}
+          {% if o["uzatma_sn"] > 0 %}<span class="rozet sari">+{{ o["uzatma_sn"] }} sn</span>{% endif %}
+        {% else %}–{% endif %}
+      </td>
+      <td>
+        {% if o["durum"] == "baslamadi" %}
+          <form method="post" action="{{ url_for('oturum_baslat', oturum_id=o['id']) }}"><button>Başlat</button></form>
+        {% elif o["durum"] == "suruyor" %}
+          <form method="post" action="{{ url_for('oturum_bitir', oturum_id=o['id']) }}"><button class="kirmizi">Bitir</button></form>
+        {% else %}
+          <a href="{{ url_for('sonuc', oturum_id=o['id']) }}">Sonuçlar</a>
+        {% endif %}
+      </td>
+    </tr>
+    {% endfor %}
+  </table>
+</div>
+
+<h2>Canlı takip</h2>
+{% if ilerleme %}
+<div class="kart">
+  <b>{{ ilerleme["baslik"] }}</b> <span class="soluk">· sayfa 5 sn'de bir yenilenir</span>
+  <div class="sayilar" style="margin-top: 10px;">
+    <div class="kart"><b>{{ ilerleme["katilimci"] }}</b><span class="soluk">katılımcı</span></div>
+    <div class="kart"><b>{{ ilerleme["verilen_cevap"] }}</b><span class="soluk">verilen cevap</span></div>
+    <div class="kart">
+      <b>{% if ilerleme["katilimci"] > 0 %}%{{ "%.1f"|format(100.0 * ilerleme["verilen_cevap"] / (ilerleme["katilimci"] * ilerleme["soru_sayisi"])) }}{% else %}–{% endif %}</b>
+      <span class="soluk">tamamlanma</span>
+    </div>
+  </div>
+  <div style="max-height: 300px; overflow-y: auto; margin-top: 12px;">
+  <table>
+    <tr><th>Öğrenci no</th><th>Öğrenci</th><th>İlerleme</th></tr>
+    {% for s in ogrenciler %}
+    <tr><td>{{ s["ogrenci_no"] }}</td><td>{{ s["ogrenci"] }}</td><td>{{ s["cevaplanan"] }}/{{ s["soru_sayisi"] }}</td></tr>
+    {% endfor %}
+  </table>
+  </div>
+</div>
+{% else %}
+  <div class="kart soluk">Şu an süren bir quiz yok.</div>
+{% endif %}
+
+<h2>En yüksek puanlı 10 öğrenci</h2>
+<div class="kart">
+  <table>
+    <tr><th>#</th><th>Öğrenci no</th><th>Öğrenci</th><th>Katıldığı quiz</th><th>Toplam doğru</th><th>Genel yüzde</th></tr>
+    {% for s in ilk10 %}
+    <tr>
+      <td>{{ loop.index }}</td><td>{{ s["ogrenci_no"] }}</td><td>{{ s["ogrenci"] }}</td>
+      <td>{{ s["katildigi_quiz"] }}</td><td>{{ s["toplam_dogru"] }}</td><td>%{{ "%g"|format(s["genel_yuzde"]) }}</td>
+    </tr>
+    {% endfor %}
+  </table>
+</div>
+
+{% endblock %}

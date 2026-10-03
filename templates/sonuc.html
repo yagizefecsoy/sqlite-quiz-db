@@ -1,0 +1,27 @@
+{% extends "base.html" %}
+{% block icerik %}
+
+<p><a href="{{ url_for('hoca') }}">← Hoca paneli</a></p>
+<h2>{{ oturum["baslik"] }} <span class="soluk">· {{ oturum["kod"] }}</span></h2>
+
+<div class="sayilar">
+  <div class="kart"><b>{{ ozet["katilimci"] }}</b><span class="soluk">katılımcı</span></div>
+  <div class="kart"><b>%{{ ozet["ortalama"] }}</b><span class="soluk">ortalama</span></div>
+  <div class="kart"><b>%{{ "%g"|format(ozet["en_yuksek"]) }}</b><span class="soluk">en yüksek</span></div>
+  <div class="kart"><b>%{{ "%g"|format(ozet["en_dusuk"]) }}</b><span class="soluk">en düşük</span></div>
+</div>
+
+<div class="kart" style="margin-top: 14px;">
+  <table>
+    <tr><th>Öğrenci no</th><th>Öğrenci</th><th>Doğru</th><th>Yanlış</th><th>Boş</th><th>Sonuç</th></tr>
+    {% for s in sonuclar %}
+    <tr>
+      <td>{{ s["ogrenci_no"] }}</td><td>{{ s["ogrenci"] }}</td>
+      <td>{{ s["dogru"] }}</td><td>{{ s["yanlis"] }}</td><td>{{ s["bos"] }}</td>
+      <td><span class="rozet yesil">{{ s["dogru"] }}/{{ s["soru_sayisi"] }} · %{{ "%g"|format(s["yuzde"]) }}</span></td>
+    </tr>
+    {% endfor %}
+  </table>
+</div>
+
+{% endblock %}
