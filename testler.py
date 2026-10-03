@@ -15,7 +15,7 @@ Kullanılan kayıtlar (seed.py ile oluşan veriden):
   kullanıcı 1  = hoca (hiçbir oturuma katılmadı)
   kullanıcı 2  = öğrenci 20240001 (oturum 1'e katıldı, 1. soruyu cevapladı)
   kullanıcı 4  = öğrenci 20240003 (oturum 1'e katılmadı)
-  kullanıcı 20 = öğrenci 20240019 (oturum 4'e katıldı, hiç cevap vermedi)
+  kullanıcı 24 = öğrenci 20240023 (oturum 4'e katıldı, hiç cevap vermedi)
   soru 1 = oturum 1'in sorusu, soru 61 = oturum 4'ün 1. sorusu
 """
 
@@ -65,19 +65,19 @@ print("\n1) CEVAPLAR")
 # ---------------------------------------------------------------------
 kabul_edilmeli(
     "Süren oturuma, katılmış öğrencinin, oturumdaki soruya geçerli cevabı",
-    "INSERT INTO cevaplar (kullanici_id, oturum_id, soru_id, verilen_cevap) VALUES (20, 4, 61, 'B')")
+    "INSERT INTO cevaplar (kullanici_id, oturum_id, soru_id, verilen_cevap) VALUES (24, 4, 61, 'B')")
 
 reddedilmeli(
     "Aynı soruya ikinci cevap SATIRI (tekrar kayıt)",
-    "INSERT INTO cevaplar (kullanici_id, oturum_id, soru_id, verilen_cevap) VALUES (20, 4, 61, 'C')")
+    "INSERT INTO cevaplar (kullanici_id, oturum_id, soru_id, verilen_cevap) VALUES (24, 4, 61, 'C')")
 
 kabul_edilmeli(
     "Aynı soruya cevap DEĞİŞTİRME (UPSERT: satır eklenmez, güncellenir)",
-    """INSERT INTO cevaplar (kullanici_id, oturum_id, soru_id, verilen_cevap) VALUES (20, 4, 61, 'A')
+    """INSERT INTO cevaplar (kullanici_id, oturum_id, soru_id, verilen_cevap) VALUES (24, 4, 61, 'A')
        ON CONFLICT (kullanici_id, oturum_id, soru_id) DO UPDATE SET verilen_cevap = excluded.verilen_cevap""")
 
-satir = sayi("SELECT COUNT(*) FROM cevaplar WHERE kullanici_id = 20 AND oturum_id = 4 AND soru_id = 61")
-deger = sayi("SELECT verilen_cevap FROM cevaplar WHERE kullanici_id = 20 AND oturum_id = 4 AND soru_id = 61")
+satir = sayi("SELECT COUNT(*) FROM cevaplar WHERE kullanici_id = 24 AND oturum_id = 4 AND soru_id = 61")
+deger = sayi("SELECT verilen_cevap FROM cevaplar WHERE kullanici_id = 24 AND oturum_id = 4 AND soru_id = 61")
 print(f"         -> kontrol: bu soru için {satir} satır var, değeri '{deger}'")
 sonuclar.append(satir == 1 and deger == "A")
 
@@ -87,11 +87,11 @@ reddedilmeli(
 
 reddedilmeli(
     "Olmayan soruya (id 9999) cevap",
-    "INSERT INTO cevaplar (kullanici_id, oturum_id, soru_id, verilen_cevap) VALUES (20, 4, 9999, 'A')")
+    "INSERT INTO cevaplar (kullanici_id, oturum_id, soru_id, verilen_cevap) VALUES (24, 4, 9999, 'A')")
 
 reddedilmeli(
     "Oturumda BULUNMAYAN soruya cevap (soru 1, oturum 1'in sorusu)",
-    "INSERT INTO cevaplar (kullanici_id, oturum_id, soru_id, verilen_cevap) VALUES (20, 4, 1, 'A')")
+    "INSERT INTO cevaplar (kullanici_id, oturum_id, soru_id, verilen_cevap) VALUES (24, 4, 1, 'A')")
 
 reddedilmeli(
     "Oturuma katılmamış kullanıcının cevabı (hoca, id 1)",
@@ -99,7 +99,7 @@ reddedilmeli(
 
 reddedilmeli(
     "Geçersiz şık ('E')",
-    "INSERT INTO cevaplar (kullanici_id, oturum_id, soru_id, verilen_cevap) VALUES (20, 4, 62, 'E')")
+    "INSERT INTO cevaplar (kullanici_id, oturum_id, soru_id, verilen_cevap) VALUES (24, 4, 62, 'E')")
 
 reddedilmeli(
     "BİTMİŞ oturuma yeni cevap",
@@ -111,7 +111,7 @@ reddedilmeli(
 
 reddedilmeli(
     "BAŞLAMAMIŞ oturuma cevap",
-    "INSERT INTO cevaplar (kullanici_id, oturum_id, soru_id, verilen_cevap) VALUES (20, 5, 81, 'A')")
+    "INSERT INTO cevaplar (kullanici_id, oturum_id, soru_id, verilen_cevap) VALUES (24, 5, 81, 'A')")
 
 
 # ---------------------------------------------------------------------
@@ -119,7 +119,7 @@ print("\n2) KATILIMLAR")
 # ---------------------------------------------------------------------
 reddedilmeli(
     "Aynı öğrencinin aynı oturuma ikinci kez katılması",
-    "INSERT INTO katilimlar (kullanici_id, oturum_id) VALUES (20, 4)")
+    "INSERT INTO katilimlar (kullanici_id, oturum_id) VALUES (24, 4)")
 
 reddedilmeli(
     "BİTMİŞ oturuma katılım",

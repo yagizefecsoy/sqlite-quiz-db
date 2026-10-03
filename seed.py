@@ -240,20 +240,21 @@ for i in range(3):
 
 
 # --- 5b) 4. oturum: şu an SÜRÜYOR (canlı takip için) ---
-# 90 saniye önce başlamış gibi; öğrenciler soruların bir kısmına ulaşmış.
+# 30 saniye önce başlamış gibi; öğrenciler ilk birkaç soruya ulaşmış.
+# (Normal tempo: 180 sn'de 20 soru, soru başına ~9 sn -> 30 sn'de en fazla ~5 soru)
 oturum_id = oturum_idleri[3]
-baslangic = datetime.now().replace(microsecond=0) - timedelta(seconds=90)
+baslangic = datetime.now().replace(microsecond=0) - timedelta(seconds=30)
 oturumu_baslat(oturum_id, baslangic)
 sorular_listesi = oturum_sorulari(oturum_id)
 
 for ogrenci_id in ogrenci_idleri:
     if random.random() > 0.85:              # öğrencilerin ~%15'i henüz katılmadı
         continue
-    katil(ogrenci_id, oturum_id, baslangic + timedelta(seconds=random.randint(0, 20)))
+    katil(ogrenci_id, oturum_id, baslangic + timedelta(seconds=random.randint(0, 8)))
 
-    ulasilan_soru = random.randint(0, 14)   # katılıp hiç cevap vermemiş olan da var (0)
+    ulasilan_soru = random.randint(0, 5)    # katılıp hiç cevap vermemiş olan da var (0)
     for soru_id, dogru_cevap in sorular_listesi[:ulasilan_soru]:
-        zaman = baslangic + timedelta(seconds=random.randint(20, 89))
+        zaman = baslangic + timedelta(seconds=random.randint(9, 29))
         cevapla(ogrenci_id, oturum_id, soru_id, cevap_sec(ogrenci_id, dogru_cevap), zaman)
 
 # --- 5c) 5. oturum: BAŞLAMADI (sadece soruları atanmış durumda) ---

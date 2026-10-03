@@ -95,7 +95,7 @@ def canli_durum(baglanti):
 @app.route("/canli")
 def canli():
     """Sayfalar bu adrese saniyede bir sorar. Cevap küçük bir JSON'dur:
-    {"oturum_id": 4, "imza": "4-54-424"}"""
+    {"oturum_id": 4, "imza": "4-49-137"}"""
     baglanti = baglan()
     durum = canli_durum(baglanti)
     baglanti.close()

@@ -23,12 +23,12 @@ python app.py
 
 1. **`python testler.py`** → 29 veri bütünlüğü kontrolü, hepsi `[OK]`. Veritabanı değişmez.
 2. **`python app.py`** → tarayıcıda **http://127.0.0.1:5000**. Deneme hesapları giriş sayfasında yazılıdır (hoca: `hoca@okul.edu.tr` / `hoca123`).
-3. **Hoca panelinde beklenen görüntü:** 60 öğrenci, 5 oturum, 100 soru · w01-s01..s03 **bitti**, w02-s01 **sürüyor** (54 öğrencinin canlı ilerlemesiyle), w02-s02 **başlamadı** · ilk 10 sıralaması.
-4. **Canlı akış:** Öğrenciyi aynı anda görmek için ikinci bir sekmede **http://localhost:5000** açıp `20240019@ogrenci.edu.tr` / `ogrenci123` ile girin. Hoca **Bitir / Başlat** dedikçe öğrenci ekranı 1 sn içinde değişir; öğrenci cevap verdikçe hoca paneli güncellenir.
+3. **Hoca panelinde beklenen görüntü:** 60 öğrenci, 5 oturum, 100 soru · w01-s01..s03 **bitti**, w02-s01 **sürüyor** (49 öğrencinin canlı ilerlemesiyle), w02-s02 **başlamadı** · ilk 10 sıralaması.
+4. **Canlı akış:** Öğrenciyi aynı anda görmek için ikinci bir sekmede **http://localhost:5000** açıp `20240023@ogrenci.edu.tr` / `ogrenci123` ile girin. Hoca **Bitir / Başlat** dedikçe öğrenci ekranı 1 sn içinde değişir; öğrenci cevap verdikçe hoca paneli güncellenir.
 
 **Bilerek böyle tasarlanan davranışlar**
 
-- **Süren quizin süresi:** Örnek veride w02-s01, `seed.py` çalıştığı andan 90 sn önce başlamış olarak kurulur ve süre o andan beri işler. `python app.py` açılışta bunu kontrol eder: süren quiz **10 dakikadan uzun** süredir açıksa veri bayat sayılır ve `seed.py` ile yeniden kurulur (terminalde yazılır). `quiz.db` doğrudan DB Browser'da açılırsa bu kontrol çalışmaz; taze süre için önce `python seed.py` çalıştırın.
+- **Süren quizin süresi:** Örnek veride w02-s01, `seed.py` çalıştığı andan 30 sn önce başlamış olarak kurulur ve süre o andan beri işler. `python app.py` açılışta bunu kontrol eder: süren quiz **10 dakikadan uzun** süredir açıksa veri bayat sayılır ve `seed.py` ile yeniden kurulur (terminalde yazılır). `quiz.db` doğrudan DB Browser'da açılırsa bu kontrol çalışmaz; taze süre için önce `python seed.py` çalıştırın.
 - **3 dakika aşılınca** sayaç uzatmayı gösterir (`3:12 (+12 sn)`), quiz hoca **Bitir** diyene kadar sürer. Gerçek quiz sistemindeki gibi.
 - **Sarı "Veri bütünlüğü kuralı" kutuları hata değildir.** Örneğin bir quiz sürerken ikincisini başlatmak ya da bitmiş quize cevap vermek veritabanı tarafından reddedilir. Kutuda açıklama ve veritabanının asıl mesajı birlikte görünür.
 
@@ -78,7 +78,7 @@ Arayüzü başlatır → tarayıcıda **http://127.0.0.1:5000** (durdurmak için
 
 > **Notlar**
 > - `seed.py` çalışmadan önce DB Browser kapatılmalıdır (Windows açık dosyanın silinmesine izin vermez).
-> - Süren oturum (w02-s01), `seed.py` çalıştırılmadan 90 sn önce başlamış kabul edilir. Kimse bitirmezse geçen süre ve uzatma artmaya devam eder. Gösterimden hemen önce `python seed.py` çalıştırın.
+> - Süren oturum (w02-s01), `seed.py` çalıştırılmadan 30 sn önce başlamış kabul edilir. Kimse bitirmezse geçen süre ve uzatma artmaya devam eder; `python app.py` açılışta 10 dakikadan eskiyse veriyi yeniler.
 > - `queries.sql`'in **D bölümü** veriyi değiştirir. DB Browser'da **Revert Changes** ile ya da `python seed.py` ile geri alınır.
 
 ---
@@ -213,8 +213,8 @@ SELECT COUNT(DISTINCT soru_id) AS farkli_soru_sayisi FROM oturum_sorulari;
 | oturumlar | 5 |
 | sorular | 100 |
 | oturum_sorulari | 100 |
-| katilimlar | 211 |
-| cevaplar | 3305 |
+| katilimlar | 206 |
+| cevaplar | 3018 |
 | **farklı soru (oturumlara atanmış)** | **100** |
 
 ---
@@ -275,7 +275,7 @@ Küçük bir Flask uygulaması. Bütün kurallar veritabanında olduğu için ar
 |---|---|---|---|---|
 | `oturumlar.durum` | `'baslamadi'` 5–9 bayt | 1 bayt | 5 | ~30 bayt, önemsiz |
 | `kullanicilar.rol` | `'ogrenci'` 4–7 bayt | 0–1 bayt | 61 | ~400 bayt, önemsiz |
-| `cevaplar.verilen_cevap` | `'A'` 1 bayt | 1 bayt | 3305 | Yok, zaten en küçük hâli |
+| `cevaplar.verilen_cevap` | `'A'` 1 bayt | 1 bayt | 3018 | Yok, zaten en küçük hâli |
 | Zaman sütunları | `'2026-09-25 10:00:00'` 19 bayt | 4–6 bayt | ~3600 | ~45 KB, tek anlamlı kazanç |
 
 - En kalabalık tablo (`cevaplar`) zaten verimli. İsraf yalnızca küçük tablolarda var.

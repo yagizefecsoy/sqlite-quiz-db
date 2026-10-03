@@ -40,7 +40,7 @@
 <div class="kapak">
   <h1>SQLite ile Quiz Veri Tabanı</h1>
   <div class="alt">SQL / Veri Tabanı Dersi – Haftalık Proje Raporu</div>
-  <div class="alt">Hazırlayan: [Ad Soyad] · [Öğrenci No] &nbsp;|&nbsp; Son teslim: 7 Ekim 2026</div>
+  <div class="alt">Hazırlayan: Yağız Efe Çiçekçisoy · 124200053 &nbsp;|&nbsp; Son teslim: 7 Ekim 2026</div>
 </div>
 
 <h2>İlerleme Durumu</h2>
@@ -270,7 +270,7 @@
   <tr><th>Sütun</th><th>Şu an</th><th>Kod ile</th><th>Satır</th><th>Kazanç</th></tr>
   <tr><td><code>oturumlar.durum</code></td><td><code>'baslamadi'</code> 5–9 bayt</td><td>1 bayt</td><td>5</td><td>~30 bayt – önemsiz</td></tr>
   <tr><td><code>kullanicilar.rol</code></td><td><code>'ogrenci'</code> 4–7 bayt</td><td>0–1 bayt</td><td>61</td><td>~400 bayt – önemsiz</td></tr>
-  <tr><td><code>cevaplar.verilen_cevap</code></td><td><code>'A'</code> 1 bayt</td><td>1 bayt</td><td>3305</td><td><b>Yok – zaten en küçük hâli</b></td></tr>
+  <tr><td><code>cevaplar.verilen_cevap</code></td><td><code>'A'</code> 1 bayt</td><td>1 bayt</td><td>3018</td><td><b>Yok – zaten en küçük hâli</b></td></tr>
   <tr><td><code>sorular.dogru_cevap</code></td><td><code>'A'</code> 1 bayt</td><td>1 bayt</td><td>100</td><td>Yok</td></tr>
   <tr><td>Zaman sütunları</td><td><code>'2026-09-25 10:00:00'</code> 19 bayt</td><td>4–6 bayt (Unix zamanı)</td><td>~3600</td><td>~45 KB – tek anlamlı kazanç</td></tr>
 </table>
@@ -356,8 +356,8 @@
   <tr><td>oturumlar</td><td>5</td><td>3 bitti, 1 sürüyor, 1 başlamadı</td></tr>
   <tr><td>sorular</td><td>100</td><td>SQL konulu, <code>sorular.csv</code> dosyasından; doğru şıklar A/B/C/D arasında eşit dağıtıldı</td></tr>
   <tr><td>oturum_sorulari</td><td>100</td><td>Her oturuma 20 soru, sıra 1–20</td></tr>
-  <tr><td>katilimlar</td><td>~210</td><td>Öğrencilerin ~%90'ı katılır</td></tr>
-  <tr><td>cevaplar</td><td>~3300</td><td>Soruların ~%8'i boş bırakılır; bazı cevaplar sonradan değiştirilir (UPSERT)</td></tr>
+  <tr><td>katilimlar</td><td>206</td><td>Öğrencilerin ~%90'ı katılır</td></tr>
+  <tr><td>cevaplar</td><td>3018</td><td>Soruların ~%8'i boş bırakılır; bazı cevaplar sonradan değiştirilir (UPSERT)</td></tr>
 </table>
 
 <h3>7.3 Önemli noktalar</h3>
@@ -365,7 +365,7 @@
   <li><b>Gerçek akış izlenir:</b> oturum <code>baslamadi</code> olarak eklenir → başlatılır → cevaplar girilir → bitirilir. Bitmiş oturuma doğrudan cevap eklenemediği (trigger) için başka yol yoktur.</li>
   <li><b>Gerçekçi sonuçlar:</b> her öğrencinin %40–95 arası bir başarı oranı vardır; doğru/yanlış cevap buna göre seçilir.</li>
   <li><b>Süre:</b> bitmiş 3 oturum tam 180 sn (3 dk) sürer. Uzatma, <code>uzatmalar</code> listesiyle eklenebilir; şimdilik 0.</li>
-  <li><b>Canlı oturum:</b> 4. oturum, betik çalıştığı andan 90 sn önce başlamış gibi kurulur; öğrenciler 0–14 soruya ulaşmıştır.</li>
+  <li><b>Canlı oturum:</b> 4. oturum, betik çalıştığı andan 30 sn önce başlamış gibi kurulur; öğrenciler 0–5 soruya ulaşmıştır (normal tempo: soru başına ~9 sn).</li>
   <li><b>Şifreler:</b> <code>hashlib.pbkdf2_hmac</code> + her kullanıcıya özel 16 baytlık rastgele salt. Deneme şifreleri: öğrenci <code>ogrenci123</code>, hoca <code>hoca123</code>.</li>
   <li><b>SQL enjeksiyonuna karşı:</b> tüm değerler <code>?</code> yer tutucularıyla gönderilir, metin birleştirme ile sorgu kurulmaz.</li>
 </ul>
@@ -399,7 +399,7 @@
 <h3>8.3 Örnek çıktılar</h3>
 <table>
   <tr><th>kod</th><th>katılımcı</th><th>katılmayan</th><th>verilen cevap</th><th>beklenen</th><th>tamamlanma</th></tr>
-  <tr><td>w02-s01 (B2)</td><td>54</td><td>6</td><td>424</td><td>1080</td><td>%39.3</td></tr>
+  <tr><td>w02-s01 (B2)</td><td>49</td><td>11</td><td>137</td><td>980</td><td>%14.0</td></tr>
 </table>
 <table>
   <tr><th>kod</th><th>katılımcı</th><th>ortalama</th><th>en yüksek</th><th>en düşük</th></tr>
@@ -407,7 +407,7 @@
   <tr><td>w01-s02</td><td>53</td><td>%63.6</td><td>%100</td><td>%25</td></tr>
   <tr><td>w01-s03</td><td>53</td><td>%65.1</td><td>%95</td><td>%35</td></tr>
 </table>
-<p><b>Not:</b> Süren oturum, <code>seed.py</code> çalıştırılmadan 90 sn önce başlamış kabul edilir; kimse bitirmezse süre ve uzatma artmaya devam eder (ör. 45 dk sonra uzatma +2492 sn). Gösterimden hemen önce <code>python seed.py</code> çalıştırılmalıdır.</p>
+<p><b>Not:</b> Süren oturum, <code>seed.py</code> çalıştırılmadan 30 sn önce başlamış kabul edilir; kimse bitirmezse süre ve uzatma artmaya devam eder. <code>python app.py</code> açılışta 10 dakikadan eskiyse veriyi yeniler (Bölüm 10.2).</p>
 <p>D akışının sonucu: öğrenci önce B, sonra A dedi → <code>cevaplar</code> tablosunda <b>tek</b> satır, değeri A; oturum bitince sonuç 1 doğru, 19 boş, %5.</p>
 
 <h2 class="adim">9. Veri Bütünlüğü Testleri (Adım 5) – <code>testler.py</code></h2>
@@ -452,7 +452,7 @@
 <ul>
   <li><b>Kurallar veritabanında:</b> arayüzde ayrıca kontrol yazılmadı. Ör. hoca bir quiz sürerken ikincisini başlatmak isterse ya da öğrenci bitmiş quizde cevap değiştirmek isterse ekranda sarı kural kutusu çıkar (ör. “Aynı anda yalnızca bir quiz sürebilir”) ve altında veritabanının asıl mesajı görünür.</li>
   <li><b>Giriş:</b> girilen şifre kayıtlı salt ile hashlenir ve kayıtlı hash ile karşılaştırılır; şifrenin kendisi hiçbir yerde saklanmaz.</li>
-  <li><b>Canlı (live):</b> sayfalar saniyede bir <code>/canli</code> adresine küçük bir soru sorar (cevap ör. <code>{"oturum_id": 4, "imza": "4-54-424"}</code>; imza = süren quiz + katılımcı + cevap sayısı). Değer değiştiyse sayfa yenilenir, değişmediyse hiçbir şey olmaz. Her saniye bütün sayfayı yüklemek yerine birkaç baytlık bir kontrol yapılır.</li>
+  <li><b>Canlı (live):</b> sayfalar saniyede bir <code>/canli</code> adresine küçük bir soru sorar (cevap ör. <code>{"oturum_id": 4, "imza": "4-49-137"}</code>; imza = süren quiz + katılımcı + cevap sayısı). Değer değiştiyse sayfa yenilenir, değişmediyse hiçbir şey olmaz. Her saniye bütün sayfayı yüklemek yerine birkaç baytlık bir kontrol yapılır.</li>
   <li><b>Süre sayacı:</b> tarayıcıda saniye saniye işler, 180 sn aşılınca uzatmayı gösterir (<code>3:12 (+12 sn)</code>).</li>
   <li><b>Açılışta bayat veri kontrolü:</b> örnek verideki süren quiz <code>seed.py</code> anından beri işler. Hoca projeyi günler sonra açtığında “günlerdir sürüyor” görünmesin diye <code>python app.py</code> açılışta bir kez bakar: süren quiz 10 dakikadan (<code>BAYAT_ESIGI_SN = 600</code>) uzun süredir açıksa <code>seed.py</code> çalıştırılır. Uygulama çalışırken bir daha bakılmaz; 3 dakikalık eşik seçilmedi çünkü gerçek uzatmaları da bayat sayardı.</li>
   <li><b>Kendini anlatan arayüz:</b> deneme hesapları ve “iki ayrı adres” notu giriş sayfasında; README başında “Hızlı inceleme”.</li>
