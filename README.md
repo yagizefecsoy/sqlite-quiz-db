@@ -276,17 +276,57 @@ Küçük bir Flask uygulaması. Bütün kurallar veritabanında olduğu için ar
 | `oturumlar.durum` | `'baslamadi'` 5–9 bayt | 1 bayt | 5 | ~30 bayt, önemsiz |
 | `kullanicilar.rol` | `'ogrenci'` 4–7 bayt | 0–1 bayt | 61 | ~400 bayt, önemsiz |
 | `cevaplar.verilen_cevap` | `'A'` 1 bayt | 1 bayt | 3018 | Yok, zaten en küçük hâli |
-| Zaman sütunları | `'2026-09-25 10:00:00'` 19 bayt | 4–6 bayt | ~3600 | ~45 KB, tek anlamlı kazanç |
+| Zaman sütunları | `'2026-09-25 10:00:00'` 19 bayt | 4–6 bayt | ~3300 | ~45 KB, tek anlamlı kazanç |
 
 - En kalabalık tablo (`cevaplar`) zaten verimli. İsraf yalnızca küçük tablolarda var.
 - `TEXT + CHECK (durum IN (...))` enum'un "yalnızca izin verilen değer" güvencesini sağlar.
 - Kod kullanmanın bedeli okunabilirliktir (`WHERE durum = 1`, DB Browser'da `2` ve `1790668800`).
 - **Karar:** Bu ölçekte okunabilirlik seçildi. Sistem büyürse önce zaman damgaları INTEGER'a (Unix zamanı), sonra durum/rol sayı koduna çevrilir.
 
-**Diğer tercihler**
-- **Oturum = tek quiz.** Gerçek sistemde quizler 5 soru, ödevin 100 soru hedefi için oturum başına 20 soru kullanıldı. Modelde soru sayısı sınırı yoktur.
-- **Sorular CSV'de:** Veri ile kod ayrıldı. Yeni soru eklemek için koda dokunmak gerekmez.
-- **SQL enjeksiyonuna karşı:** Python tarafında tüm değerler `?` yer tutucularıyla gönderilir.
+### Alınan kararlar
+
+**Veri modeli**
+
+| Karar | Neden |
+|---|---|
+| Oturum = tek quiz (gerçek sistemdeki "Session") | Başlık, durum, başlangıç/bitiş zamanı tek bir quize karşılık gelir. Hocaya danışıldı, yanıt bekleniyor. |
+| Oturum başına 20 soru | Gerçek quizler 5 soru, ama ödev 5 oturumda 100 farklı soru istiyor. Modelde soru sayısı sınırı yok. |
+| Kurallar veritabanında (FK, bileşik FK, UNIQUE, CHECK, trigger) | Veriye hangi araçla (Python, DB Browser, komut satırı) erişilirse erişilsin hatalı veri girilemez. Arayüzde kural tekrar yazılmadı. |
+| Cevap değiştirme = UPSERT, quiz bitince trigger ile kilit | Gerçek sistemde quiz açıkken cevap değiştirmek serbest. Öğrenci–soru başına tek satır kalır. |
+| Aynı anda tek quiz (kısmi benzersiz indeks) | Test sırasında iki quizin aynı anda sürebildiği fark edildi ve kapatıldı. |
+| Puan ve süre saklanmaz, VIEW ile hesaplanır | Türetilen bilgi saklanırsa her cevapta güncellenmesi gerekir, unutulursa çelişir (normalizasyon). |
+| Şifre: PBKDF2-SHA256 + kullanıcıya özel salt | Veritabanı ele geçse bile şifreler okunamaz. |
+| ENUM yerine `TEXT + CHECK` | Yukarıdaki tablo: bu ölçekte kazanç birkaç KB, okunabilirlik daha değerli. |
+
+**Örnek veri (`seed.py`)**
+
+| Karar | Neden |
+|---|---|
+| 3 bitti + 1 sürüyor + 1 başlamadı | Ödevin istediği üç durum veride hazır görünür, canlı takip ilk açılışta dolu olur. ("Süren quiz olmasın" seçeneği denendi: canlı takip boş kaldı, geri dönüldü.) |
+| Bitmiş quizler tam 3 dk, uzatmasız | Sade veri. `uzatmalar` listesiyle uzatma eklenebilir. |
+| Süren quiz, seed anından **30 sn** önce başlamış | Hoca ve öğrenci sekmelerini açmaya 3 dakikadan önce vakit kalsın. Öğrenci ilerlemesi buna uygun: 0–5 soru (soru başına ~9 sn). |
+| `random.seed(42)` | Her çalıştırmada aynı veri: teslim yeniden kurulabilir. |
+| Sorular `sorular.csv` dosyasında | Veri ile kod ayrı. Yeni soru eklemek için koda dokunmak gerekmez. |
+| Python'da her değer `?` yer tutucusuyla | SQL enjeksiyonuna karşı koruma. |
+
+**Arayüz (`app.py`)**
+
+| Karar | Neden |
+|---|---|
+| Flask | Python'un en sade web kütüphanesi. Proje zaten Python kullanıyor, tek ek paket. |
+| Küçük ama ödevin her maddesini gösteren 4 ekran | Ödev "küçük ve çalışan" arayüz istiyor. Her ekran bir ödev maddesine karşılık geliyor (Bölüm 8). |
+| Live: saniyede bir `/canli` kontrolü, değişince yenileme | Her saniye bütün sayfayı yüklemek (5 sorgu + HTML) yerine birkaç baytlık kontrol. İlk sürümdeki 5 saniyelik tam yenilemenin yerini aldı. |
+| Süre sayacı tarayıcıda | Sunucuya sormadan saniye saniye işler, 3 dk aşılınca uzatmayı gösterir. |
+| Açılışta bayat veri kontrolü, eşik **5 dk** | Süren quiz seed anından beri işler, günler sonra "günlerdir sürüyor" görünmesin. Sadece açılışta bakılır (sayfa açılışında seed, live akışı ve yapılan işlemleri silerdi). 3 dk seçilmedi, gerçek uzatmaları da bayat sayardı. |
+| Hoca `127.0.0.1:5000`, öğrenci `localhost:5000` | Giriş bilgisi çerezde tutulur. Aynı adreste iki sekme aynı çerezi paylaşır ve biri diğerini kapatır. İki adres ayrı site sayılır. (Alternatif: öğrenci için farklı bir tarayıcı ya da tek bir gizli pencere.) |
+| Reddedilen işlemler sarı "veri bütünlüğü kuralı" kutusunda | Proje tek başına incelenecek. Kural ihlali hata gibi görünmesin: Türkçe açıklama + veritabanının asıl mesajı. |
+| Deneme hesapları giriş sayfasında | README açılmadan da giriş yapılabilsin. |
+| Canlı simülasyon yapılmadı | Seed'deki süren quiz canlı takibi zaten dolu gösteriyor. |
+
+**Bilinen sınırlamalar**
+
+- Windows'ta test edildi. Mac'te `python3` / `pip3` gerekebilir. 5000 portu macOS AirPlay ile çakışabilir.
+- `quiz.db` doğrudan DB Browser'da açılırsa bayat veri kontrolü çalışmaz (süren quizin süresi seed anından beri işler). Önce `python seed.py` çalıştırın.
 
 ---
 

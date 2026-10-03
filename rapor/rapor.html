@@ -272,7 +272,7 @@
   <tr><td><code>kullanicilar.rol</code></td><td><code>'ogrenci'</code> 4–7 bayt</td><td>0–1 bayt</td><td>61</td><td>~400 bayt – önemsiz</td></tr>
   <tr><td><code>cevaplar.verilen_cevap</code></td><td><code>'A'</code> 1 bayt</td><td>1 bayt</td><td>3018</td><td><b>Yok – zaten en küçük hâli</b></td></tr>
   <tr><td><code>sorular.dogru_cevap</code></td><td><code>'A'</code> 1 bayt</td><td>1 bayt</td><td>100</td><td>Yok</td></tr>
-  <tr><td>Zaman sütunları</td><td><code>'2026-09-25 10:00:00'</code> 19 bayt</td><td>4–6 bayt (Unix zamanı)</td><td>~3600</td><td>~45 KB – tek anlamlı kazanç</td></tr>
+  <tr><td>Zaman sütunları</td><td><code>'2026-09-25 10:00:00'</code> 19 bayt</td><td>4–6 bayt (Unix zamanı)</td><td>~3300</td><td>~45 KB – tek anlamlı kazanç</td></tr>
 </table>
 <ul>
   <li><b>En kalabalık tablo (<code>cevaplar</code>) zaten verimli:</b> cevap tek karakter. İsraf yalnızca 5 ve 61 satırlık tablolarda var ve önemsiz.</li>
@@ -459,6 +459,44 @@
   <li><b>Yetki:</b> öğrenci hoca sayfalarını açamaz (girişe yönlendirilir).</li>
   <li><b>Yapı:</b> <code>app.py</code> (~250 satır) + 5 şablon (<code>base</code>, <code>giris</code>, <code>ogrenci</code>, <code>hoca</code>, <code>sonuc</code>). Sorgular <code>queries.sql</code> ile aynıdır.</li>
 </ul>
+
+<h2 class="adim">11. Karar Özeti</h2>
+<p>Proje boyunca alınan kararlar ve gerekçeleri, tek yerde.</p>
+
+<h3>11.1 Veri modeli</h3>
+<table>
+  <tr><th style="width:38%">Karar</th><th>Neden</th></tr>
+  <tr><td>Oturum = tek quiz (Session)</td><td>Başlık, durum, başlangıç/bitiş tek quize karşılık gelir. Hocaya danışıldı, yanıt bekleniyor.</td></tr>
+  <tr><td>Oturum başına 20 soru</td><td>Gerçek quizler 5 soru; ödev 5 oturumda 100 farklı soru istiyor. Modelde sınır yok.</td></tr>
+  <tr><td>Kurallar veritabanında</td><td>Hangi araçla erişilirse erişilsin hatalı veri girilemez; arayüzde tekrar yazılmadı.</td></tr>
+  <tr><td>Cevap değiştirme = UPSERT, bitince trigger kilidi</td><td>Gerçek sistemde quiz açıkken değiştirme serbest; öğrenci–soru başına tek satır.</td></tr>
+  <tr><td>Aynı anda tek quiz (kısmi UNIQUE)</td><td>Test sırasında fark edilen eksik kapatıldı.</td></tr>
+  <tr><td>Puan ve süre VIEW ile hesaplanır</td><td>Türetilen bilgi saklanmaz (normalizasyon).</td></tr>
+  <tr><td>Şifre: PBKDF2-SHA256 + salt</td><td>Veritabanı ele geçse bile şifreler okunamaz.</td></tr>
+  <tr><td>ENUM yerine TEXT + CHECK</td><td>Bu ölçekte kazanç birkaç KB; okunabilirlik seçildi (Bölüm 5.6).</td></tr>
+</table>
+
+<h3>11.2 Örnek veri</h3>
+<table>
+  <tr><th style="width:38%">Karar</th><th>Neden</th></tr>
+  <tr><td>3 bitti + 1 sürüyor + 1 başlamadı</td><td>Üç durum veride hazır görünür, canlı takip ilk açılışta dolu. “Süren quiz olmasın” denendi: canlı takip boş kaldı, geri dönüldü.</td></tr>
+  <tr><td>Bitmiş quizler tam 3 dk</td><td>Sade veri; uzatma <code>uzatmalar</code> listesiyle eklenebilir.</td></tr>
+  <tr><td>Süren quiz seed anından 30 sn önce başlamış</td><td>İki sekmeyi açmaya 3 dk dolmadan vakit kalsın. İlerleme buna uygun: 0–5 soru.</td></tr>
+  <tr><td><code>random.seed(42)</code>, sorular CSV'de, <code>?</code> yer tutucuları</td><td>Yeniden kurulabilir veri · veri/kod ayrımı · SQL enjeksiyonuna karşı koruma.</td></tr>
+</table>
+
+<h3>11.3 Arayüz</h3>
+<table>
+  <tr><th style="width:38%">Karar</th><th>Neden</th></tr>
+  <tr><td>Flask</td><td>Python'un en sade web kütüphanesi; proje zaten Python, tek ek paket.</td></tr>
+  <tr><td>Küçük ama ödevin her maddesini gösteren 4 ekran</td><td>Ödev “küçük ve çalışan” arayüz istiyor (Bölüm 10.1).</td></tr>
+  <tr><td>Live: saniyede bir <code>/canli</code> kontrolü</td><td>Tam sayfa yenileme (5 sn) yerine birkaç baytlık kontrol; değişince yenilenir.</td></tr>
+  <tr><td>Açılışta bayat veri kontrolü, eşik 5 dk</td><td>Günler sonra açılınca “günlerdir sürüyor” görünmesin. Sayfa açılışında seed live akışı bozardı; 3 dk gerçek uzatmaları da bayat sayardı.</td></tr>
+  <tr><td>Hoca <code>127.0.0.1</code>, öğrenci <code>localhost</code></td><td>Giriş çerezde tutulur; aynı adresteki sekmeler birbirini kapatır. İki adres ayrı site sayılır (alternatif: farklı tarayıcı / gizli pencere).</td></tr>
+  <tr><td>Sarı “veri bütünlüğü kuralı” kutuları, giriş sayfasında deneme hesapları</td><td>Proje tek başına incelenecek: kural ihlali hata gibi görünmesin, giriş için README gerekmesin.</td></tr>
+  <tr><td>Canlı simülasyon yapılmadı</td><td>Seed'deki süren quiz canlı takibi zaten dolu gösteriyor.</td></tr>
+</table>
+<p class="alt"><b>Bilinen sınırlamalar:</b> Windows'ta test edildi; Mac'te <code>python3</code> gerekebilir, 5000 portu AirPlay ile çakışabilir. <code>quiz.db</code> doğrudan DB Browser'da açılırsa bayat veri kontrolü çalışmaz, önce <code>python seed.py</code>.</p>
 
 </body>
 </html>
