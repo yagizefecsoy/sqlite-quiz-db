@@ -39,7 +39,6 @@ KURAL_ACIKLAMALARI = [
     ("Oturum bitmis",          "Bitmiş bir quize katılınamaz."),
     ("Gecersiz durum gecisi",  "Quiz durumu yalnızca ileri gidebilir: başlamadı → sürüyor → bitti."),
     ("katilimlar.kullanici_id", "Bu quize zaten katıldınız."),
-    ("zamani gecersiz",        "Zaman bilgisi tutarsız: quizin başlangıcından önce ya da gelecekte olamaz."),
 ]
 
 

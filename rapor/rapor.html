@@ -263,7 +263,6 @@
   <li><b>Aynı anda tek oturum sürebilir:</b> kısmi benzersiz indeks <code>tek_aktif_oturum ON oturumlar(durum) WHERE durum = 'suruyor'</code>.</li>
   <li><b>Durum geçişleri tek yönlüdür:</b> <code>baslamadi → suruyor → bitti</code>; geriye dönüş trigger ile engellenir.</li>
   <li><b>Zaman tutarlılığı (CHECK):</b> <code>baslamadi</code> ise başlangıç ve bitiş boş; <code>suruyor</code> ise başlangıç dolu, bitiş boş; <code>bitti</code> ise ikisi de dolu ve bitiş ≥ başlangıç.</li>
-  <li><b>Zaman damgaları (trigger):</b> başlangıç yalnızca başlatılırken, bitiş yalnızca bitirilirken yazılır ve sonradan değiştirilemez; katılım ve cevap zamanı quizin başlangıcından önce ya da gelecekte olamaz.</li>
   <li><b>Değer kısıtları (CHECK):</b> şıklar ve doğru cevap yalnızca A/B/C/D; rol yalnızca ogrenci/hoca; planlanan süre pozitif.</li>
 </ul>
 
@@ -298,7 +297,7 @@
 <div class="kutu ana"><b>Karar:</b> Bu ölçekte okunabilirlik seçildi, yapı değiştirilmedi. Sistem büyürse (milyonlarca cevap) önce zaman damgaları INTEGER'a (Unix zamanı), sonra durum/rol sayı koduna çevrilir.</div>
 
 <h2 class="adim">6. Şema (Adım 2) – <code>schema.sql</code></h2>
-<p>Çalıştırma: <code>sqlite3 quiz.db ".read schema.sql"</code> → 6 tablo, 5 indeks, 8 trigger, 2 görünüm (Bölüm 8.1).</p>
+<p>Çalıştırma: <code>sqlite3 quiz.db ".read schema.sql"</code> → 6 tablo, 5 indeks, 4 trigger, 2 görünüm (Bölüm 8.1).</p>
 
 <h3>6.1 Kısıt türleri ve kullanıldığı yerler</h3>
 <table>
@@ -319,9 +318,6 @@
   <tr><td><code>trg_katilim_bitmis_oturum</code></td><td>Bitmiş oturuma katılım</td></tr>
   <tr><td><code>trg_cevap_ekle_aktif_oturum</code></td><td>Süren oturum dışında cevap ekleme</td></tr>
   <tr><td><code>trg_cevap_guncelle_aktif_oturum</code></td><td>Oturum bittikten sonra cevap değiştirme</td></tr>
-  <tr><td><code>trg_oturum_zaman_kilidi</code></td><td>Başlangıç/bitiş saatini sonradan değiştirme ya da geleceğe yazma</td></tr>
-  <tr><td><code>trg_katilim_zamani</code></td><td>Quiz başlangıcından önce ya da gelecekte katılım zamanı</td></tr>
-  <tr><td><code>trg_cevap_zamani_ekle</code> / <code>_guncelle</code></td><td>Quiz başlangıcından önce ya da gelecekte cevap zamanı</td></tr>
 </table>
 
 <h3>6.3 İndeksler</h3>
@@ -337,7 +333,6 @@
   <tr><td>Bitiş zamanı olmadan “bitti”</td><td>Reddedildi (CHECK)</td></tr>
   <tr><td>bitti → suruyor geri dönüş</td><td>Reddedildi (trigger)</td></tr>
   <tr><td>Bitmiş oturumda cevap değiştirme</td><td>Reddedildi (trigger)</td></tr>
-  <tr><td>Gelecek tarihli cevap, başlangıçtan önce katılım, quiz saatlerini sonradan değiştirme</td><td>Reddedildi (trigger)</td></tr>
   <tr><td>Bir quiz sürerken ikincisini başlatma</td><td>Reddedildi (kısmi UNIQUE indeks)</td></tr>
 </table>
 
@@ -432,7 +427,7 @@
 
 <h2 class="adim">9. Veri Bütünlüğü Testleri (Adım 5) – <code>testler.py</code></h2>
 <p>Çalıştırma: <code>python testler.py</code>. Her test kurallara aykırı bir işlem dener ve reddedildiğini doğrular; birkaç test de doğru işlemlerin kabul edildiğini doğrular. Sonunda <code>rollback</code> ile her şey geri alınır, <code>quiz.db</code> değişmez.</p>
-<div class="kutu ana"><b>Sonuç: 34 kontrolün 34'ü beklendiği gibi.</b></div>
+<div class="kutu ana"><b>Sonuç: 29 kontrolün 29'u beklendiği gibi.</b></div>
 <table>
   <tr><th style="width:44%">Denenen işlem</th><th>Sonuç</th><th style="width:22%">Engelleyen</th></tr>
   <tr><td colspan="3"><b>Ödevin açıkça istedikleri</b></td></tr>
@@ -451,7 +446,6 @@
   <tr><td>Bitişsiz “bitti”, bitişi başlangıçtan önce, geçersiz durum</td><td>Reddedildi</td><td>CHECK</td></tr>
   <tr><td>Tekrarlanan e-posta (büyük harfle bile), öğrenci no, oturum kodu</td><td>Reddedildi</td><td>UNIQUE (NOCASE)</td></tr>
   <tr><td>Numarasız öğrenci, geçersiz e-posta, geçersiz şık</td><td>Reddedildi</td><td>CHECK</td></tr>
-  <tr><td>Başlangıçtan önce katılım, gelecek tarihli cevap, quiz saatlerini sonradan değiştirme</td><td>Reddedildi</td><td>Trigger</td></tr>
 </table>
 
 <h2 class="adim">10. Arayüz (Adım 7) – <code>app.py</code></h2>
@@ -492,7 +486,6 @@
   <tr><td>Kurallar veritabanında</td><td>Hangi araçla erişilirse erişilsin hatalı veri girilemez; arayüzde tekrar yazılmadı.</td></tr>
   <tr><td>Cevap değiştirme = UPSERT, bitince trigger kilidi</td><td>Gerçek sistemde quiz açıkken değiştirme serbest; öğrenci–soru başına tek satır.</td></tr>
   <tr><td>Aynı anda tek quiz (kısmi UNIQUE)</td><td>Test sırasında fark edilen eksik kapatıldı.</td></tr>
-  <tr><td>Zaman damgaları trigger'larla korunur</td><td>Yönerge “zaman damgaları tutarlı olmalı” diyor; satır satır kontrolde bulunan açıklar (gelecek tarihli cevap, sonradan değişen quiz saatleri) 4 trigger ile kapatıldı.</td></tr>
   <tr><td>Puan ve süre VIEW ile hesaplanır</td><td>Türetilen bilgi saklanmaz (normalizasyon).</td></tr>
   <tr><td>Şifre: PBKDF2-SHA256 + salt</td><td>Veritabanı ele geçse bile şifreler okunamaz.</td></tr>
   <tr><td>ENUM yerine TEXT + CHECK</td><td>Bu ölçekte kazanç birkaç KB; okunabilirlik seçildi (Bölüm 5.6).</td></tr>

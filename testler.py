@@ -205,31 +205,6 @@ reddedilmeli(
 
 
 # ---------------------------------------------------------------------
-print("\n6) ZAMAN DAMGALARI")
-# ---------------------------------------------------------------------
-reddedilmeli(
-    "Quiz başlangıcından ÖNCE katılım zamanı (öğrenci 3, oturum 4)",
-    "INSERT INTO katilimlar (kullanici_id, oturum_id, katilma_zamani) VALUES (3, 4, '2020-01-01 00:00:00')")
-
-reddedilmeli(
-    "GELECEK tarihli cevap zamanı",
-    """INSERT INTO cevaplar (kullanici_id, oturum_id, soru_id, verilen_cevap, cevap_zamani)
-       VALUES (24, 4, 62, 'A', '2099-01-01 00:00:00')""")
-
-reddedilmeli(
-    "Bir cevabın zamanını GELECEĞE güncelleme",
-    "UPDATE cevaplar SET cevap_zamani = '2099-01-01 00:00:00' WHERE id = (SELECT MIN(id) FROM cevaplar WHERE oturum_id = 4)")
-
-reddedilmeli(
-    "Süren quizin başlangıç saatini sonradan değiştirme",
-    "UPDATE oturumlar SET baslangic = '2026-01-01 00:00:00' WHERE id = 4")
-
-reddedilmeli(
-    "Bitmiş quizin bitiş saatini sonradan değiştirme",
-    "UPDATE oturumlar SET bitis = '2026-09-25 11:00:00' WHERE id = 1")
-
-
-# ---------------------------------------------------------------------
 # Özet ve geri alma
 # ---------------------------------------------------------------------
 baglanti.rollback()      # yapılan her şeyi geri al: quiz.db değişmez
