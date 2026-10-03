@@ -6,7 +6,7 @@
 --   C. Sonuçlar ve puan sıralaması
 --   D. Akış denemesi: oturum başlat -> katıl -> cevapla -> bitir
 --
--- A, B ve C bölümleri yalnızca OKUR (SELECT); istenildiği kadar çalıştırılabilir.
+-- A, B ve C bölümleri yalnızca OKUR (SELECT), istenildiği kadar çalıştırılabilir.
 -- D bölümü veriyi DEĞİŞTİRİR. Başa dönmek için:  python seed.py
 --
 -- Puan hesabı schema.sql içindeki v_sonuclar görünümündedir,
@@ -36,7 +36,7 @@ UNION ALL
 SELECT 'cevaplar',        COUNT(*) FROM cevaplar;
 
 -- A2. Oturumlara atanmış FARKLI soru sayısı
--- (Aynı soru birden çok oturumda olsa bile bir kez sayılır; hedef: 100)
+-- (Aynı soru birden çok oturumda olsa bile bir kez sayılır, hedef: 100)
 SELECT COUNT(DISTINCT soru_id) AS farkli_soru_sayisi
 FROM oturum_sorulari;
 
@@ -112,7 +112,7 @@ ORDER BY r.cevaplanan DESC, u.ogrenci_no;
 
 -- =====================================================================
 -- C. SONUÇLAR VE PUAN SIRALAMASI
--- Puanlama: doğru = 1, yanlış = 0, boş = 0; yüzde = doğru / soru sayısı * 100
+-- Puanlama: doğru = 1, yanlış = 0, boş = 0 ve yüzde = doğru / soru sayısı * 100
 -- =====================================================================
 
 -- C1. Bir oturumun sonuçları (başka oturum için kodu değiştirin)

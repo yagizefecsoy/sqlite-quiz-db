@@ -203,13 +203,13 @@ END;
 
 -- =====================================================================
 -- GÖRÜNÜMLER (VIEW)
--- VIEW, kaydedilmiş bir SELECT sorgusudur; tablo gibi sorgulanır ama
+-- VIEW, kaydedilmiş bir SELECT sorgusudur, tablo gibi sorgulanır ama
 -- veri saklamaz, her okunduğunda güncel veriden yeniden hesaplanır.
 -- Puan ve süre gibi TÜRETİLEN bilgiler tablolarda saklanmaz, burada hesaplanır.
 -- =====================================================================
 
 -- Her oturumun durumu, geçen süresi ve 3 dakikayı aşan uzatma süresi.
--- strftime('%s', zaman) bir zamanı saniyeye çevirir; iki zamanın farkı = süre.
+-- strftime('%s', zaman) bir zamanı saniyeye çevirir, iki zamanın farkı = süre.
 CREATE VIEW v_oturum_durumu AS
 SELECT
     id, kod, baslik, hafta, durum, planlanan_sure_sn, baslangic, bitis,
