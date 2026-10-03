@@ -50,7 +50,7 @@
   <tr><td>1</td><td>Veri modeli: tablolar ve ilişkiler</td><td>ER diyagramı (Bölüm 4)</td><td><span class="etiket tamam">Tamamlandı</span></td></tr>
   <tr><td>2</td><td>Şema: anahtarlar, kısıtlar, indeksler, trigger'lar</td><td><code>schema.sql</code></td><td><span class="etiket tamam">Tamamlandı</span></td></tr>
   <tr><td>3</td><td>Örnek veri: 50+ kullanıcı, 5 oturum, 100 soru, cevaplar</td><td><code>seed.py</code>, <code>quiz.db</code></td><td><span class="etiket tamam">Tamamlandı</span></td></tr>
-  <tr><td>4</td><td>Sorgular: canlı takip, sonuçlar, sıralama, kayıt sayıları</td><td><code>queries.sql</code></td><td><span class="etiket bekliyor">Bekliyor</span></td></tr>
+  <tr><td>4</td><td>Sorgular: canlı takip, sonuçlar, sıralama, kayıt sayıları</td><td><code>queries.sql</code></td><td><span class="etiket tamam">Tamamlandı</span></td></tr>
   <tr><td>5</td><td>Veri bütünlüğü testleri</td><td>Test betiği ve çıktıları</td><td><span class="etiket bekliyor">Bekliyor</span></td></tr>
   <tr><td>6</td><td>Dokümantasyon</td><td><code>README.md</code></td><td><span class="etiket bekliyor">Bekliyor</span></td></tr>
   <tr><td>7</td><td>Arayüz (ek puan)</td><td>Flask web uygulaması</td><td><span class="etiket bekliyor">Bekliyor</span></td></tr>
@@ -260,7 +260,7 @@
 <p>“Canlı takip” için ayrı bir mekanizma gerekmez: hoca paneli veya sorgu, güncel veriyi belirli aralıklarla yeniden okur. Bir oturumun anlık durumu, katılımcı sayısı, cevaplanan soru sayısı ve geçen süre tek sorguyla izlenebilir.</p>
 
 <h2 class="adim">6. Şema (Adım 2) – <code>schema.sql</code></h2>
-<p>Çalıştırma: <code>sqlite3 quiz.db ".read schema.sql"</code> → 6 tablo, 4 indeks, 4 trigger.</p>
+<p>Çalıştırma: <code>sqlite3 quiz.db ".read schema.sql"</code> → 6 tablo, 4 indeks, 4 trigger, 2 görünüm (Bölüm 8.1).</p>
 
 <h3>6.1 Kısıt türleri ve kullanıldığı yerler</h3>
 <table>
@@ -346,6 +346,45 @@
   <li><b>Şifreler:</b> <code>hashlib.pbkdf2_hmac</code> + her kullanıcıya özel 16 baytlık rastgele salt. Deneme şifreleri: öğrenci <code>ogrenci123</code>, hoca <code>hoca123</code>.</li>
   <li><b>SQL enjeksiyonuna karşı:</b> tüm değerler <code>?</code> yer tutucularıyla gönderilir, metin birleştirme ile sorgu kurulmaz.</li>
 </ul>
+
+<h2 class="adim">8. Sorgular (Adım 4) – <code>queries.sql</code></h2>
+<p>Çalıştırma: DB Browser → <i>Execute SQL</i>, ya da <code>sqlite3 quiz.db ".read queries.sql"</code>. A–C bölümleri yalnızca okur; D bölümü veriyi değiştirir (geri almak için <code>python seed.py</code>).</p>
+
+<h3>8.1 Görünümler (VIEW) – <code>schema.sql</code> içinde</h3>
+<table>
+  <tr><th style="width:24%">Görünüm</th><th>Hesapladığı</th></tr>
+  <tr><td><code>v_oturum_durumu</code></td><td>Her oturumun geçen süresi ve 180 sn'yi aşan uzatma süresi (<code>strftime('%s', …)</code> ile tam saniye)</td></tr>
+  <tr><td><code>v_sonuclar</code></td><td>Her katılımcının her oturumdaki doğru, yanlış, boş sayısı ve yüzdesi. <b>Puanlama kuralı yalnızca burada yazılıdır.</b></td></tr>
+</table>
+<div class="kutu ana"><b>Puanlama:</b> doğru = 1, yanlış = 0, boş = 0 &nbsp;→&nbsp; yüzde = doğru ÷ oturumdaki soru sayısı × 100. Genel sıralamada payda bitmiş oturumların toplam sorusudur; katılınmayan quiz 0 sayılır.</div>
+
+<h3>8.2 Sorgu listesi</h3>
+<table>
+  <tr><th style="width:8%">No</th><th>Sorgu</th><th style="width:34%">Ödevdeki karşılığı</th></tr>
+  <tr><td>A1–A3</td><td>Tablo kayıt sayıları, farklı soru sayısı, oturum başına soru sayısı</td><td>Kayıt sayılarının doğrulanması</td></tr>
+  <tr><td>B1</td><td>Tüm oturumların durumu, geçen süre, uzatma</td><td rowspan="4">Oturumun anlık durumu ve cevaplanma ilerlemesi (canlı takip)</td></tr>
+  <tr><td>B2</td><td>Süren oturum: katılımcı, katılmayan, verilen cevap, tamamlanma %</td></tr>
+  <tr><td>B3</td><td>Süren oturum: soru bazında cevaplayan sayısı</td></tr>
+  <tr><td>B4</td><td>Süren oturum: öğrenci bazında ilerleme (ör. 14/20)</td></tr>
+  <tr><td>C1</td><td>Bir oturumun sonuçları: doğru / yanlış / boş, “18/20 · %90”</td><td rowspan="2">Oturum sonuçları</td></tr>
+  <tr><td>C2</td><td>Oturum özetleri: katılımcı, ortalama, en yüksek, en düşük</td></tr>
+  <tr><td>C3</td><td>Genel yüzdeye göre ilk 10 öğrenci</td><td>En yüksek puanlı kullanıcılar</td></tr>
+  <tr><td>C4</td><td>Doğru oranı en düşük 5 soru</td><td>Ek</td></tr>
+  <tr><td>D1–D7</td><td>Başlat → katıl → cevapla → cevabı değiştir → bitir → sonuç</td><td>Cevap kaydetme ve sonuç üretme akışı</td></tr>
+</table>
+
+<h3>8.3 Örnek çıktılar</h3>
+<table>
+  <tr><th>kod</th><th>katılımcı</th><th>katılmayan</th><th>verilen cevap</th><th>beklenen</th><th>tamamlanma</th></tr>
+  <tr><td>w02-s01 (B2)</td><td>54</td><td>6</td><td>424</td><td>1080</td><td>%39.3</td></tr>
+</table>
+<table>
+  <tr><th>kod</th><th>katılımcı</th><th>ortalama</th><th>en yüksek</th><th>en düşük</th></tr>
+  <tr><td>w01-s01 (C2)</td><td>51</td><td>%60.2</td><td>%100</td><td>%20</td></tr>
+  <tr><td>w01-s02</td><td>53</td><td>%63.6</td><td>%100</td><td>%25</td></tr>
+  <tr><td>w01-s03</td><td>53</td><td>%65.1</td><td>%95</td><td>%35</td></tr>
+</table>
+<p>D akışının sonucu: öğrenci önce B, sonra A dedi → <code>cevaplar</code> tablosunda <b>tek</b> satır, değeri A; oturum bitince sonuç 1 doğru, 19 boş, %5.</p>
 
 </body>
 </html>

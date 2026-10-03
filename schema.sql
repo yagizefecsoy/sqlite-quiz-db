@@ -1,6 +1,6 @@
 -- =====================================================================
 -- SQLite Quiz Veri Tabanı - Şema
--- Tablolar, kısıtlar, indeksler ve tetikleyiciler (trigger)
+-- Tablolar, kısıtlar, indeksler, tetikleyiciler (trigger) ve görünümler (view)
 -- Çalıştırma:  sqlite3 quiz.db ".read schema.sql"
 -- =====================================================================
 
@@ -9,7 +9,9 @@
 PRAGMA foreign_keys = ON;
 
 -- Şema tekrar çalıştırılabilsin diye eski tablolar silinir.
--- Sıra önemli: önce başka tabloya bağlı olan (çocuk) tablolar silinir.
+-- Sıra önemli: önce görünümler, sonra başka tabloya bağlı olan (çocuk) tablolar silinir.
+DROP VIEW IF EXISTS v_sonuclar;
+DROP VIEW IF EXISTS v_oturum_durumu;
 DROP TABLE IF EXISTS cevaplar;
 DROP TABLE IF EXISTS katilimlar;
 DROP TABLE IF EXISTS oturum_sorulari;
@@ -197,3 +199,63 @@ WHEN (SELECT durum FROM oturumlar WHERE id = NEW.oturum_id) <> 'suruyor'
 BEGIN
     SELECT RAISE(ABORT, 'Oturum aktif degil: cevap degistirilemez');
 END;
+
+
+-- =====================================================================
+-- GÖRÜNÜMLER (VIEW)
+-- VIEW, kaydedilmiş bir SELECT sorgusudur; tablo gibi sorgulanır ama
+-- veri saklamaz, her okunduğunda güncel veriden yeniden hesaplanır.
+-- Puan ve süre gibi TÜRETİLEN bilgiler tablolarda saklanmaz, burada hesaplanır.
+-- =====================================================================
+
+-- Her oturumun durumu, geçen süresi ve 3 dakikayı aşan uzatma süresi.
+-- strftime('%s', zaman) bir zamanı saniyeye çevirir; iki zamanın farkı = süre.
+CREATE VIEW v_oturum_durumu AS
+SELECT
+    id, kod, baslik, hafta, durum, planlanan_sure_sn, baslangic, bitis,
+    gecen_sure_sn,
+    CASE WHEN gecen_sure_sn > planlanan_sure_sn
+         THEN gecen_sure_sn - planlanan_sure_sn
+         ELSE 0
+    END AS uzatma_sn
+FROM (
+    SELECT
+        oturumlar.*,
+        CASE durum
+            WHEN 'baslamadi' THEN NULL
+            WHEN 'suruyor'   THEN strftime('%s', 'now', 'localtime') - strftime('%s', baslangic)
+            ELSE                  strftime('%s', bitis)              - strftime('%s', baslangic)
+        END AS gecen_sure_sn
+    FROM oturumlar
+);
+
+-- PUANLAMA KURALI (tek yerde):
+--   Her katılımcı için, katıldığı oturumda:
+--   dogru  = doğru şıkkı seçtiği soru sayısı
+--   yanlis = cevapladığı ama yanlış seçtiği soru sayısı
+--   bos    = hiç cevaplamadığı soru sayısı
+--   yuzde  = dogru / oturumdaki soru sayısı * 100   (yanlış ve boş = 0 puan)
+CREATE VIEW v_sonuclar AS
+SELECT
+    oturum_id,
+    kullanici_id,
+    soru_sayisi,
+    cevaplanan,
+    dogru,
+    cevaplanan - dogru               AS yanlis,
+    soru_sayisi - cevaplanan         AS bos,
+    ROUND(100.0 * dogru / soru_sayisi, 1) AS yuzde
+FROM (
+    SELECT
+        k.oturum_id,
+        k.kullanici_id,
+        (SELECT COUNT(*) FROM oturum_sorulari os
+          WHERE os.oturum_id = k.oturum_id)                          AS soru_sayisi,
+        COUNT(c.id)                                                  AS cevaplanan,
+        SUM(CASE WHEN c.verilen_cevap = s.dogru_cevap THEN 1 ELSE 0 END) AS dogru
+    FROM katilimlar k
+    LEFT JOIN cevaplar c ON c.kullanici_id = k.kullanici_id
+                        AND c.oturum_id    = k.oturum_id
+    LEFT JOIN sorular s  ON s.id = c.soru_id
+    GROUP BY k.oturum_id, k.kullanici_id
+);
