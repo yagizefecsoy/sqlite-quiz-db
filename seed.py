@@ -204,8 +204,9 @@ def cevapla(ogrenci_id, oturum_id, soru_id, cevap, zaman):
 
 
 # --- 5a) İlk 3 oturum: başladı, cevaplandı, bitti ---
-# Hoca bazen 3 dakikayı aşıyor: bitişe eklenecek uzatma (saniye)
-uzatmalar = [10, 0, 30]
+# Bitişe eklenecek uzatma (saniye). Şimdilik hepsi tam 3 dakika (uzatma yok).
+# Hoca süreyi aşsaydı buraya ör. [10, 0, 30] yazılırdı.
+uzatmalar = [0, 0, 0]
 baslangiclar = [datetime(2026, 9, 25, 10, 0, 0),
                 datetime(2026, 9, 25, 10, 20, 0),
                 datetime(2026, 9, 25, 10, 40, 0)]

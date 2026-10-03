@@ -341,7 +341,7 @@
 <ul>
   <li><b>Gerçek akış izlenir:</b> oturum <code>baslamadi</code> olarak eklenir → başlatılır → cevaplar girilir → bitirilir. Bitmiş oturuma doğrudan cevap eklenemediği (trigger) için başka yol yoktur.</li>
   <li><b>Gerçekçi sonuçlar:</b> her öğrencinin %40–95 arası bir başarı oranı vardır; doğru/yanlış cevap buna göre seçilir.</li>
-  <li><b>Süre aşımı:</b> bitmiş oturumlarda bitiş, 180 sn'ye +10 / +0 / +30 sn eklenerek oluşturulur.</li>
+  <li><b>Süre:</b> bitmiş 3 oturum tam 180 sn (3 dk) sürer. Uzatma, <code>uzatmalar</code> listesiyle eklenebilir; şimdilik 0.</li>
   <li><b>Canlı oturum:</b> 4. oturum, betik çalıştığı andan 90 sn önce başlamış gibi kurulur; öğrenciler 0–14 soruya ulaşmıştır.</li>
   <li><b>Şifreler:</b> <code>hashlib.pbkdf2_hmac</code> + her kullanıcıya özel 16 baytlık rastgele salt. Deneme şifreleri: öğrenci <code>ogrenci123</code>, hoca <code>hoca123</code>.</li>
   <li><b>SQL enjeksiyonuna karşı:</b> tüm değerler <code>?</code> yer tutucularıyla gönderilir, metin birleştirme ile sorgu kurulmaz.</li>
