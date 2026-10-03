@@ -43,6 +43,21 @@
   <div class="alt">Hazırlayan: Yağız Efe Çiçekçisoy · 124200053 &nbsp;|&nbsp; Son teslim: 7 Ekim 2026</div>
 </div>
 
+<div class="kutu ana">
+  <b>İncelemeden önce bilinmesi gerekenler</b>
+  <ol style="margin: 6px 0 0; padding-left: 20px;">
+    <li><b>İki adres:</b> Hoca ve öğrenciyi aynı anda denemek için birini <code>http://127.0.0.1:5000</code>, diğerini <code>http://localhost:5000</code> adresinde açın. Aynı adresteki iki sekme birbirinin oturumunu kapatır. (Alternatif: farklı tarayıcı ya da gizli pencere.)</li>
+    <li><b>Açılıştaki “örnek veri bayat” mesajı:</b> Örnek veride bir quizin (w02-s01) “sürüyor” durumunda olmasını istedim, çünkü ödevin istediği başlamamış, süren ve bitmiş durumların üçü de veride hazır görünsün ve canlı takip ilk açılışta dolu olsun istedim. Ancak <code>seed.py</code> bu quizi çalıştığı andan 30 sn önce başlamış olarak kaydediyor ve proje günler sonra açıldığında quiz “günlerdir sürüyor” (ör. <code>+250000 sn</code> uzatma) görünecekti. Bunu önlemek için, hocam projeyi açtığında verinin güncel olması amacıyla <b>5 dakikayı sınır alan bir kontrol ekledim:</b> <code>python app.py</code> açılırken süren quiz 5 dakikadan uzun süredir açıksa veriyi <code>seed.py</code> ile yeniden kuruyor ve terminale bunu yazıyor. Böylece quiz <code>0:30</code>'dan başlıyor. Seed her seferinde aynı veriyi ürettiği için (<code>random.seed(42)</code>) silinen önemli bir şey olmuyor, değişen tek şey süren quizin başlangıç saati. Sınırı 3 dakika yapmadım, çünkü quizin resmî süresi 3 dakika ve gerçek uzatmaları (+10, +30 sn) da bayat sayardı. Kontrol yalnızca açılışta yapılıyor, uygulama çalışırken veriye dokunulmuyor.</li>
+    <li><b>Sayaç:</b> Süren quiz <code>0:30</code> civarından başlar. 3 dakika dolunca uzatmayı gösterir (<code>3:12 (+12 sn)</code>). Quiz, hoca <b>Bitir</b> diyene kadar sürer.</li>
+    <li><b>Aynı anda tek quiz:</b> w02-s02'yi başlatmak için önce w02-s01'i <b>Bitir</b>'in.</li>
+    <li><b>Sarı kutular hata değildir:</b> Veritabanının reddettiği işlemler sarı “veri bütünlüğü kuralı” kutusunda açıklanır.</li>
+    <li><b>Live:</b> Sayfaların kendiliğinden yenilenmesi beklenen bir davranıştır. Başlat ve Bitir öğrenci ekranına 1 sn içinde yansır.</li>
+    <li><b>Demo öğrencisi:</b> <code>20240023@ogrenci.edu.tr</code> / <code>ogrenci123</code>. Süren quize katılmış ama henüz cevap vermemiş.</li>
+    <li><b>DB Browser:</b> <code>quiz.db</code> doğrudan açılırsa açılış kontrolü çalışmaz. Taze süre için önce <code>python seed.py</code> çalıştırın.</li>
+    <li><b>Bilinen sınırlamalar:</b> Windows'ta test edildi. Mac'te <code>python3</code> gerekebilir, 5000 portu AirPlay ile çakışabilir.</li>
+  </ol>
+</div>
+
 <h2>İlerleme Durumu</h2>
 <table>
   <tr><th style="width:8%">Adım</th><th>İş</th><th style="width:28%">Çıktı</th><th style="width:14%">Durum</th></tr>
@@ -496,7 +511,7 @@
   <tr><td>Sarı “veri bütünlüğü kuralı” kutuları, giriş sayfasında deneme hesapları</td><td>Proje tek başına incelenecek: kural ihlali hata gibi görünmesin, giriş için README gerekmesin.</td></tr>
   <tr><td>Canlı simülasyon yapılmadı</td><td>Seed'deki süren quiz canlı takibi zaten dolu gösteriyor.</td></tr>
 </table>
-<p class="alt"><b>Bilinen sınırlamalar:</b> Windows'ta test edildi; Mac'te <code>python3</code> gerekebilir, 5000 portu AirPlay ile çakışabilir. <code>quiz.db</code> doğrudan DB Browser'da açılırsa bayat veri kontrolü çalışmaz, önce <code>python seed.py</code>.</p>
+
 
 </body>
 </html>

@@ -26,11 +26,17 @@ python app.py
 3. **Hoca panelinde beklenen görüntü:** 60 öğrenci, 5 oturum, 100 soru · w01-s01..s03 **bitti**, w02-s01 **sürüyor** (49 öğrencinin canlı ilerlemesiyle), w02-s02 **başlamadı** · ilk 10 sıralaması.
 4. **Canlı akış:** Öğrenciyi aynı anda görmek için ikinci bir sekmede **http://localhost:5000** açıp `20240023@ogrenci.edu.tr` / `ogrenci123` ile girin. Hoca **Bitir / Başlat** dedikçe öğrenci ekranı 1 sn içinde değişir; öğrenci cevap verdikçe hoca paneli güncellenir.
 
-**Bilerek böyle tasarlanan davranışlar**
+**İncelemeden önce bilinmesi gerekenler**
 
-- **Süren quizin süresi:** Örnek veride w02-s01, `seed.py` çalıştığı andan 30 sn önce başlamış olarak kurulur ve süre o andan beri işler. `python app.py` açılışta bunu kontrol eder: süren quiz **5 dakikadan uzun** süredir açıksa veri bayat sayılır ve `seed.py` ile yeniden kurulur (terminalde yazılır). `quiz.db` doğrudan DB Browser'da açılırsa bu kontrol çalışmaz; taze süre için önce `python seed.py` çalıştırın.
-- **3 dakika aşılınca** sayaç uzatmayı gösterir (`3:12 (+12 sn)`), quiz hoca **Bitir** diyene kadar sürer. Gerçek quiz sistemindeki gibi.
-- **Sarı "Veri bütünlüğü kuralı" kutuları hata değildir.** Örneğin bir quiz sürerken ikincisini başlatmak ya da bitmiş quize cevap vermek veritabanı tarafından reddedilir. Kutuda açıklama ve veritabanının asıl mesajı birlikte görünür.
+1. **İki adres:** Hoca ve öğrenciyi aynı anda denemek için birini **http://127.0.0.1:5000**, diğerini **http://localhost:5000** adresinde açın. Aynı adresteki iki sekme birbirinin oturumunu kapatır. (Alternatif: farklı tarayıcı ya da gizli pencere.)
+2. **Açılıştaki "örnek veri bayat" mesajı:** Örnek veride bir quizin (w02-s01) "sürüyor" durumunda olmasını istedim, çünkü ödevin istediği başlamamış, süren ve bitmiş durumların üçü de veride hazır görünsün ve canlı takip ilk açılışta dolu olsun istedim. Ancak `seed.py` bu quizi çalıştığı andan 30 sn önce başlamış olarak kaydediyor ve proje günler sonra açıldığında quiz "günlerdir sürüyor" (ör. `+250000 sn` uzatma) görünecekti. Bunu önlemek için, hocam projeyi açtığında verinin güncel olması amacıyla **5 dakikayı sınır alan bir kontrol ekledim:** `python app.py` açılırken süren quiz 5 dakikadan uzun süredir açıksa veriyi `seed.py` ile yeniden kuruyor ve terminale bunu yazıyor. Böylece quiz `0:30`'dan başlıyor. Seed her seferinde aynı veriyi ürettiği için (`random.seed(42)`) silinen önemli bir şey olmuyor, değişen tek şey süren quizin başlangıç saati. Sınırı 3 dakika yapmadım, çünkü quizin resmî süresi 3 dakika ve gerçek uzatmaları (+10, +30 sn) da bayat sayardı. Kontrol yalnızca açılışta yapılıyor, uygulama çalışırken veriye dokunulmuyor.
+3. **Sayaç:** Süren quiz `0:30` civarından başlar. 3 dakika dolunca uzatmayı gösterir (`3:12 (+12 sn)`). Quiz, hoca **Bitir** diyene kadar sürer.
+4. **Aynı anda tek quiz:** w02-s02'yi başlatmak için önce w02-s01'i **Bitir**'in.
+5. **Sarı kutular hata değildir:** Veritabanının reddettiği işlemler sarı "veri bütünlüğü kuralı" kutusunda açıklanır.
+6. **Live:** Sayfaların kendiliğinden yenilenmesi beklenen bir davranıştır. Başlat ve Bitir öğrenci ekranına 1 sn içinde yansır.
+7. **Demo öğrencisi:** `20240023@ogrenci.edu.tr` / `ogrenci123`. Süren quize katılmış ama henüz cevap vermemiş.
+8. **DB Browser:** `quiz.db` doğrudan açılırsa açılış kontrolü çalışmaz. Taze süre için önce `python seed.py` çalıştırın.
+9. **Bilinen sınırlamalar:** Windows'ta test edildi. Mac'te `python3` gerekebilir, 5000 portu AirPlay ile çakışabilir.
 
 ---
 
@@ -322,11 +328,6 @@ Küçük bir Flask uygulaması. Bütün kurallar veritabanında olduğu için ar
 | Reddedilen işlemler sarı "veri bütünlüğü kuralı" kutusunda | Proje tek başına incelenecek. Kural ihlali hata gibi görünmesin: Türkçe açıklama + veritabanının asıl mesajı. |
 | Deneme hesapları giriş sayfasında | README açılmadan da giriş yapılabilsin. |
 | Canlı simülasyon yapılmadı | Seed'deki süren quiz canlı takibi zaten dolu gösteriyor. |
-
-**Bilinen sınırlamalar**
-
-- Windows'ta test edildi. Mac'te `python3` / `pip3` gerekebilir. 5000 portu macOS AirPlay ile çakışabilir.
-- `quiz.db` doğrudan DB Browser'da açılırsa bayat veri kontrolü çalışmaz (süren quizin süresi seed anından beri işler). Önce `python seed.py` çalıştırın.
 
 ---
 
