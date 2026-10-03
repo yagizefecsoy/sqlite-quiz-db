@@ -48,7 +48,7 @@
   <tr><th style="width:8%">Adım</th><th>İş</th><th style="width:28%">Çıktı</th><th style="width:14%">Durum</th></tr>
   <tr><td>0</td><td>Planlama, gereksinim analizi, ortam kurulumu</td><td>Bu rapor, git deposu</td><td><span class="etiket tamam">Tamamlandı</span></td></tr>
   <tr><td>1</td><td>Veri modeli: tablolar ve ilişkiler</td><td>ER diyagramı (Bölüm 4)</td><td><span class="etiket tamam">Tamamlandı</span></td></tr>
-  <tr><td>2</td><td>Şema: anahtarlar, kısıtlar, indeksler, trigger'lar</td><td><code>schema.sql</code></td><td><span class="etiket bekliyor">Bekliyor</span></td></tr>
+  <tr><td>2</td><td>Şema: anahtarlar, kısıtlar, indeksler, trigger'lar</td><td><code>schema.sql</code></td><td><span class="etiket tamam">Tamamlandı</span></td></tr>
   <tr><td>3</td><td>Örnek veri: 50+ kullanıcı, 5 oturum, 100 soru, cevaplar</td><td><code>seed.py</code>, <code>quiz.db</code></td><td><span class="etiket bekliyor">Bekliyor</span></td></tr>
   <tr><td>4</td><td>Sorgular: canlı takip, sonuçlar, sıralama, kayıt sayıları</td><td><code>queries.sql</code></td><td><span class="etiket bekliyor">Bekliyor</span></td></tr>
   <tr><td>5</td><td>Veri bütünlüğü testleri</td><td>Test betiği ve çıktıları</td><td><span class="etiket bekliyor">Bekliyor</span></td></tr>
@@ -258,6 +258,45 @@
 
 <h3>5.5 Canlı takip</h3>
 <p>“Canlı takip” için ayrı bir mekanizma gerekmez: hoca paneli veya sorgu, güncel veriyi belirli aralıklarla yeniden okur. Bir oturumun anlık durumu, katılımcı sayısı, cevaplanan soru sayısı ve geçen süre tek sorguyla izlenebilir.</p>
+
+<h2 class="adim">6. Şema (Adım 2) – <code>schema.sql</code></h2>
+<p>Çalıştırma: <code>sqlite3 quiz.db ".read schema.sql"</code> → 6 tablo, 4 indeks, 4 trigger.</p>
+
+<h3>6.1 Kısıt türleri ve kullanıldığı yerler</h3>
+<table>
+  <tr><th style="width:22%">Kısıt</th><th>Ne işe yarar?</th><th style="width:42%">Örnek</th></tr>
+  <tr><td>PRIMARY KEY</td><td>Her satırın benzersiz kimliği</td><td><code>oturum_sorulari(oturum_id, soru_id)</code></td></tr>
+  <tr><td>FOREIGN KEY</td><td>Bağlanılan kayıt gerçekten var olmalı</td><td><code>cevaplar(oturum_id, soru_id) → oturum_sorulari</code></td></tr>
+  <tr><td>UNIQUE</td><td>Tekrarı engeller</td><td><code>email</code>, <code>ogrenci_no</code>, <code>(kullanici, oturum, soru)</code></td></tr>
+  <tr><td>NOT NULL</td><td>Boş bırakılamaz</td><td>ad, soyad, soru metni, şıklar</td></tr>
+  <tr><td>CHECK</td><td>Değer kuralına uymalı</td><td>cevap ∈ {A,B,C,D}; durum–zaman tutarlılığı</td></tr>
+  <tr><td>DEFAULT</td><td>Değer verilmezse otomatik doldurulur</td><td><code>kayit_zamani</code>, <code>durum='baslamadi'</code>, süre 180 sn</td></tr>
+</table>
+
+<h3>6.2 Trigger'lar</h3>
+<p>CHECK yalnızca aynı satıra bakabilir. Başka tabloya bakan (oturumun durumu) veya eski/yeni değeri karşılaştıran kurallar trigger ile yazıldı.</p>
+<table>
+  <tr><th style="width:38%">Trigger</th><th>Engellediği durum</th></tr>
+  <tr><td><code>trg_oturum_durum_gecisi</code></td><td>Durumun geri gitmesi (ör. bitti → suruyor)</td></tr>
+  <tr><td><code>trg_katilim_bitmis_oturum</code></td><td>Bitmiş oturuma katılım</td></tr>
+  <tr><td><code>trg_cevap_ekle_aktif_oturum</code></td><td>Süren oturum dışında cevap ekleme</td></tr>
+  <tr><td><code>trg_cevap_guncelle_aktif_oturum</code></td><td>Oturum bittikten sonra cevap değiştirme</td></tr>
+</table>
+
+<h3>6.3 İndeksler</h3>
+<p>PRIMARY KEY ve UNIQUE sütunları otomatik indekslenir. Ek olarak: katılımcıları oturuma göre, cevapları oturum+soruya göre, oturumları duruma göre ve soruların hangi oturumlarda olduğunu bulan 4 indeks eklendi.</p>
+
+<h3>6.4 Hızlı doğrulama</h3>
+<table>
+  <tr><th>Deneme</th><th style="width:45%">Sonuç</th></tr>
+  <tr><td>Başlamamış oturuma cevap</td><td>Reddedildi (trigger)</td></tr>
+  <tr><td>Oturumda olmayan soruya cevap</td><td>Reddedildi (FOREIGN KEY)</td></tr>
+  <tr><td>Aynı soruya ikinci cevap satırı</td><td>Reddedildi (UNIQUE) – UPSERT ile güncelleme kabul</td></tr>
+  <tr><td>Olmayan kullanıcı ile cevap</td><td>Reddedildi (FOREIGN KEY)</td></tr>
+  <tr><td>Bitiş zamanı olmadan “bitti”</td><td>Reddedildi (CHECK)</td></tr>
+  <tr><td>bitti → suruyor geri dönüş</td><td>Reddedildi (trigger)</td></tr>
+  <tr><td>Bitmiş oturumda cevap değiştirme</td><td>Reddedildi (trigger)</td></tr>
+</table>
 
 </body>
 </html>
