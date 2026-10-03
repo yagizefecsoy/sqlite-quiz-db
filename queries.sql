@@ -184,12 +184,18 @@ LIMIT 5;
 
 
 -- =====================================================================
--- D. AKIŞ DENEMESİ (veriyi DEĞİŞTİRİR - başa dönmek için: python seed.py)
+-- D. AKIŞ DENEMESİ (veriyi DEĞİŞTİRİR, başa dönmek için: python seed.py)
 -- Başlamamış oturum w02-s02 (id = 5) üzerinde tam bir quiz akışı:
 -- öğrenci: id = 2 (20240001), soru: id = 81 (w02-s02'nin 1. sorusu, doğru cevap A)
+-- Aynı anda tek oturum sürebildiği için önce süren w02-s01 bitirilir.
 -- =====================================================================
 
--- D1. Hoca oturumu başlatır
+-- D0. Hoca süren oturumu (w02-s01) bitirir
+UPDATE oturumlar
+SET durum = 'bitti', bitis = datetime('now', 'localtime')
+WHERE kod = 'w02-s01';
+
+-- D1. Hoca yeni oturumu başlatır
 UPDATE oturumlar
 SET durum = 'suruyor', baslangic = datetime('now', 'localtime')
 WHERE kod = 'w02-s02';

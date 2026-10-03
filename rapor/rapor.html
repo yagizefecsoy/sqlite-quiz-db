@@ -245,6 +245,7 @@
 <ul>
   <li><b>Katılmadan cevap verilemez:</b> <code>cevaplar(kullanici_id, oturum_id)</code> → <code>katilimlar</code> bileşik yabancı anahtarı.</li>
   <li><b>Yalnızca süren oturuma cevap verilir:</b> Oturum <code>suruyor</code> değilse cevap ekleme/güncelleme bir <i>trigger</i> ile reddedilir. Böylece hoca quizi bitirdikten sonra cevap değiştirilemez.</li>
+  <li><b>Aynı anda tek oturum sürebilir:</b> kısmi benzersiz indeks <code>tek_aktif_oturum ON oturumlar(durum) WHERE durum = 'suruyor'</code>.</li>
   <li><b>Durum geçişleri tek yönlüdür:</b> <code>baslamadi → suruyor → bitti</code>; geriye dönüş trigger ile engellenir.</li>
   <li><b>Zaman tutarlılığı (CHECK):</b> <code>baslamadi</code> ise başlangıç ve bitiş boş; <code>suruyor</code> ise başlangıç dolu, bitiş boş; <code>bitti</code> ise ikisi de dolu ve bitiş ≥ başlangıç.</li>
   <li><b>Değer kısıtları (CHECK):</b> şıklar ve doğru cevap yalnızca A/B/C/D; rol yalnızca ogrenci/hoca; planlanan süre pozitif.</li>
@@ -260,7 +261,7 @@
 <p>“Canlı takip” için ayrı bir mekanizma gerekmez: hoca paneli veya sorgu, güncel veriyi belirli aralıklarla yeniden okur. Bir oturumun anlık durumu, katılımcı sayısı, cevaplanan soru sayısı ve geçen süre tek sorguyla izlenebilir.</p>
 
 <h2 class="adim">6. Şema (Adım 2) – <code>schema.sql</code></h2>
-<p>Çalıştırma: <code>sqlite3 quiz.db ".read schema.sql"</code> → 6 tablo, 4 indeks, 4 trigger, 2 görünüm (Bölüm 8.1).</p>
+<p>Çalıştırma: <code>sqlite3 quiz.db ".read schema.sql"</code> → 6 tablo, 5 indeks, 4 trigger, 2 görünüm (Bölüm 8.1).</p>
 
 <h3>6.1 Kısıt türleri ve kullanıldığı yerler</h3>
 <table>
@@ -284,7 +285,7 @@
 </table>
 
 <h3>6.3 İndeksler</h3>
-<p>PRIMARY KEY ve UNIQUE sütunları otomatik indekslenir. Ek olarak: katılımcıları oturuma göre, cevapları oturum+soruya göre, oturumları duruma göre ve soruların hangi oturumlarda olduğunu bulan 4 indeks eklendi.</p>
+<p>PRIMARY KEY ve UNIQUE sütunları otomatik indekslenir. Ek olarak: katılımcıları oturuma göre, cevapları oturum+soruya göre, oturumları duruma göre ve soruların hangi oturumlarda olduğunu bulan 4 indeks eklendi. Ayrıca <code>tek_aktif_oturum</code> <b>kısmi benzersiz indeksi</b> bir kural görevi görür: UNIQUE yalnızca <code>durum = 'suruyor'</code> olan satırlara uygulanır, böylece aynı anda ikinci bir quiz başlatılamaz.</p>
 
 <h3>6.4 Hızlı doğrulama</h3>
 <table>
@@ -296,6 +297,7 @@
   <tr><td>Bitiş zamanı olmadan “bitti”</td><td>Reddedildi (CHECK)</td></tr>
   <tr><td>bitti → suruyor geri dönüş</td><td>Reddedildi (trigger)</td></tr>
   <tr><td>Bitmiş oturumda cevap değiştirme</td><td>Reddedildi (trigger)</td></tr>
+  <tr><td>Bir quiz sürerken ikincisini başlatma</td><td>Reddedildi (kısmi UNIQUE indeks)</td></tr>
 </table>
 
 <h2 class="adim">7. Örnek Veri (Adım 3) – <code>seed.py</code></h2>
@@ -370,7 +372,7 @@
   <tr><td>C2</td><td>Oturum özetleri: katılımcı, ortalama, en yüksek, en düşük</td></tr>
   <tr><td>C3</td><td>Genel yüzdeye göre ilk 10 öğrenci</td><td>En yüksek puanlı kullanıcılar</td></tr>
   <tr><td>C4</td><td>Doğru oranı en düşük 5 soru</td><td>Ek</td></tr>
-  <tr><td>D1–D7</td><td>Başlat → katıl → cevapla → cevabı değiştir → bitir → sonuç</td><td>Cevap kaydetme ve sonuç üretme akışı</td></tr>
+  <tr><td>D0–D7</td><td>Süreni bitir → yenisini başlat → katıl → cevapla → cevabı değiştir → bitir → sonuç</td><td>Cevap kaydetme ve sonuç üretme akışı</td></tr>
 </table>
 
 <h3>8.3 Örnek çıktılar</h3>
@@ -384,6 +386,7 @@
   <tr><td>w01-s02</td><td>53</td><td>%63.6</td><td>%100</td><td>%25</td></tr>
   <tr><td>w01-s03</td><td>53</td><td>%65.1</td><td>%95</td><td>%35</td></tr>
 </table>
+<p><b>Not:</b> Süren oturum, <code>seed.py</code> çalıştırılmadan 90 sn önce başlamış kabul edilir; kimse bitirmezse süre ve uzatma artmaya devam eder (ör. 45 dk sonra uzatma +2492 sn). Gösterimden hemen önce <code>python seed.py</code> çalıştırılmalıdır.</p>
 <p>D akışının sonucu: öğrenci önce B, sonra A dedi → <code>cevaplar</code> tablosunda <b>tek</b> satır, değeri A; oturum bitince sonuç 1 doğru, 19 boş, %5.</p>
 
 </body>

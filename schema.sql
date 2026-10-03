@@ -157,6 +157,11 @@ CREATE INDEX idx_oturum_sorulari_soru ON oturum_sorulari(soru_id);
 -- Aktif oturumu bulma (durum = 'suruyor')
 CREATE INDEX idx_oturumlar_durum ON oturumlar(durum);
 
+-- KURAL: aynı anda yalnızca TEK bir oturum sürebilir.
+-- Kısmi benzersiz indeks: UNIQUE kuralı sadece durum = 'suruyor' olan satırlara uygulanır.
+-- 'baslamadi' ve 'bitti' durumunda istenildiği kadar oturum olabilir.
+CREATE UNIQUE INDEX tek_aktif_oturum ON oturumlar(durum) WHERE durum = 'suruyor';
+
 
 -- =====================================================================
 -- TETİKLEYİCİLER (TRIGGER)
