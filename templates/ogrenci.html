@@ -1,4 +1,8 @@
 {% extends "base.html" %}
+
+{# Canlı: hoca quizi başlatınca ya da bitirince sayfa 1 sn içinde yenilenir #}
+{% block betik %}<script>canliTakip("oturum_id", {{ oturum["id"] if oturum else "null" }});</script>{% endblock %}
+
 {% block icerik %}
 
 <h2>Süren quiz</h2>
@@ -8,6 +12,7 @@
 {% elif not katildi %}
   <div class="kart">
     <b>{{ oturum["baslik"] }}</b> <span class="soluk">· {{ oturum["kod"] }}</span>
+    <span id="sayac" class="rozet sari" data-gecen="{{ oturum['gecen_sure_sn'] }}" data-plan="{{ oturum['planlanan_sure_sn'] }}"></span>
     <form method="post" action="{{ url_for('katil') }}" style="margin-top: 10px;">
       <input type="hidden" name="oturum_id" value="{{ oturum['id'] }}">
       <button type="submit">Quize katıl</button>
@@ -17,7 +22,8 @@
 {% else %}
   <div class="kart">
     <b>{{ oturum["baslik"] }}</b>
-    <span class="rozet sari">Cevaplanan: {{ cevaplar|length }}/{{ sorular|length }}</span>
+    <span id="sayac" class="rozet sari" data-gecen="{{ oturum['gecen_sure_sn'] }}" data-plan="{{ oturum['planlanan_sure_sn'] }}"></span>
+    <span class="rozet gri">Cevaplanan: {{ cevaplar|length }}/{{ sorular|length }}</span>
     <div class="soluk">Quiz sürerken cevaplarını istediğin kadar değiştirebilirsin. Şıkka tıklamak cevabı kaydeder.</div>
   </div>
 

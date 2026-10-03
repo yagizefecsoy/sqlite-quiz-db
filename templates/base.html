@@ -3,7 +3,6 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  {% block ek_head %}{% endblock %}
   <title>Quiz</title>
   <style>
     body   { font-family: "Segoe UI", Arial, sans-serif; background: #f5f6f8; color: #1d2433; margin: 0; }
@@ -41,5 +40,39 @@
     {% endfor %}
     {% block icerik %}{% endblock %}
   </div>
+
+  <script>
+    // ---- Süre sayacı ----
+    // id="sayac" olan kutu, sunucudan gelen geçen süreden başlar ve her saniye bir artar.
+    // 3 dakika (planlanan süre) aşılınca uzatmayı da yazar: "3:12 (+12 sn)"
+    const sayac = document.getElementById("sayac");
+    if (sayac) {
+      let gecen = Number(sayac.dataset.gecen);
+      const plan = Number(sayac.dataset.plan);
+      function sayaciYaz() {
+        let metin = Math.floor(gecen / 60) + ":" + String(gecen % 60).padStart(2, "0");
+        if (gecen > plan) {
+          metin = metin + " (+" + (gecen - plan) + " sn)";
+        }
+        sayac.textContent = metin;
+      }
+      sayaciYaz();
+      setInterval(function () { gecen = gecen + 1; sayaciYaz(); }, 1000);
+    }
+
+    // ---- Canlı takip ----
+    // Saniyede bir /canli adresine "durum ne?" diye sorar. Sayfa açıldığındaki değer
+    // ile şimdiki değer farklıysa (quiz başladı, bitti, yeni cevap geldi) sayfayı yeniler.
+    function canliTakip(alan, sayfadakiDeger) {
+      setInterval(async function () {
+        const yanit = await fetch("{{ url_for('canli') }}");
+        const durum = await yanit.json();
+        if (durum[alan] !== sayfadakiDeger) {
+          location.reload();
+        }
+      }, 1000);
+    }
+  </script>
+  {% block betik %}{% endblock %}
 </body>
 </html>

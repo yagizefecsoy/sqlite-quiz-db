@@ -1,7 +1,7 @@
 {% extends "base.html" %}
 
-{# Canlı takip: sayfa 5 saniyede bir kendini yeniden yükler, sorgular güncel veriyi tekrar okur #}
-{% block ek_head %}<meta http-equiv="refresh" content="5">{% endblock %}
+{# Canlı takip: süren quiz, katılımcı ya da cevap sayısı değişince sayfa 1 sn içinde yenilenir #}
+{% block betik %}<script>canliTakip("imza", "{{ imza }}");</script>{% endblock %}
 
 {% block icerik %}
 
@@ -28,7 +28,9 @@
       <td>{{ o["baslangic"] or "–" }}</td>
       <td>{{ o["bitis"] or "–" }}</td>
       <td>
-        {% if o["gecen_sure_sn"] is not none %}
+        {% if o["durum"] == "suruyor" %}
+          <span id="sayac" class="rozet sari" data-gecen="{{ o['gecen_sure_sn'] }}" data-plan="{{ o['planlanan_sure_sn'] }}"></span>
+        {% elif o["gecen_sure_sn"] is not none %}
           {{ "%d:%02d"|format(o["gecen_sure_sn"] // 60, o["gecen_sure_sn"] % 60) }}
           {% if o["uzatma_sn"] > 0 %}<span class="rozet sari">+{{ o["uzatma_sn"] }} sn</span>{% endif %}
         {% else %}–{% endif %}
@@ -50,7 +52,7 @@
 <h2>Canlı takip</h2>
 {% if ilerleme %}
 <div class="kart">
-  <b>{{ ilerleme["baslik"] }}</b> <span class="soluk">· sayfa 5 sn'de bir yenilenir</span>
+  <b>{{ ilerleme["baslik"] }}</b> <span class="soluk">· canlı (yeni katılım ve cevaplarda kendiliğinden yenilenir)</span>
   <div class="sayilar" style="margin-top: 10px;">
     <div class="kart"><b>{{ ilerleme["katilimci"] }}</b><span class="soluk">katılımcı</span></div>
     <div class="kart"><b>{{ ilerleme["verilen_cevap"] }}</b><span class="soluk">verilen cevap</span></div>

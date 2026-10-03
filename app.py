@@ -51,6 +51,32 @@ def islem_yap(sql, degerler):
     baglanti.close()
 
 
+def canli_durum(baglanti):
+    """Canlı takip için kısa bir özet: süren quiz hangisi, kaç katılımcı, kaç cevap.
+    'imza' bu üç bilginin birleşimidir. İmza değiştiyse ekranın yenilenmesi gerekir."""
+    satir = baglanti.execute(
+        """SELECT d.id,
+                  (SELECT COUNT(*) FROM katilimlar k WHERE k.oturum_id = d.id) AS katilimci,
+                  (SELECT COUNT(*) FROM cevaplar c   WHERE c.oturum_id = d.id) AS cevap
+           FROM v_oturum_durumu d
+           WHERE d.durum = 'suruyor'"""
+    ).fetchone()
+    if satir is None:
+        return {"oturum_id": None, "imza": "yok"}
+    imza = f"{satir['id']}-{satir['katilimci']}-{satir['cevap']}"
+    return {"oturum_id": satir["id"], "imza": imza}
+
+
+@app.route("/canli")
+def canli():
+    """Sayfalar bu adrese saniyede bir sorar. Cevap küçük bir JSON'dur:
+    {"oturum_id": 4, "imza": "4-54-424"}"""
+    baglanti = baglan()
+    durum = canli_durum(baglanti)
+    baglanti.close()
+    return durum
+
+
 # ---------------------------------------------------------------------
 # GİRİŞ / ÇIKIŞ
 # ---------------------------------------------------------------------
@@ -222,10 +248,12 @@ def hoca():
            ORDER BY genel_yuzde DESC, u.ogrenci_no
            LIMIT 10"""
     ).fetchall()
+    durum = canli_durum(baglanti)
     baglanti.close()
 
     return render_template("hoca.html", sayilar=sayilar, oturumlar=oturumlar,
-                           ilerleme=ilerleme, ogrenciler=ogrenciler, ilk10=ilk10)
+                           ilerleme=ilerleme, ogrenciler=ogrenciler, ilk10=ilk10,
+                           imza=durum["imza"])
 
 
 @app.route("/oturum/<int:oturum_id>/baslat", methods=["POST"])
