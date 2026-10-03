@@ -260,6 +260,27 @@
 <h3>5.5 Canlı takip</h3>
 <p>“Canlı takip” için ayrı bir mekanizma gerekmez: hoca paneli veya sorgu, güncel veriyi belirli aralıklarla yeniden okur. Bir oturumun anlık durumu, katılımcı sayısı, cevaplanan soru sayısı ve geçen süre tek sorguyla izlenebilir.</p>
 
+<h3>5.6 Tasarım tercihi: ENUM ve saklama maliyeti</h3>
+<p>Az sayıda sabit değer alan sütunlar (ör. haftanın günleri) metin yerine küçük kodlarla (ENUM) tutulursa yer kazanılır: <code>'Wednesday'</code> 9 bayt, 7 değerlik bir kod 3 bit.</p>
+<ul>
+  <li><b>SQLite'ta ENUM tipi yoktur.</b> Taklit yolları: sayı kodu (<code>durum INTEGER CHECK (durum IN (0,1,2))</code>) ya da ayrı tablo + yabancı anahtar.</li>
+  <li><b>SQLite bit düzeyinde saklamaz;</b> en küçük birim bayttır. Küçük bir sayı 1 bayt, 0 ve 1 ise neredeyse hiç yer kaplamaz.</li>
+</ul>
+<table>
+  <tr><th>Sütun</th><th>Şu an</th><th>Kod ile</th><th>Satır</th><th>Kazanç</th></tr>
+  <tr><td><code>oturumlar.durum</code></td><td><code>'baslamadi'</code> 5–9 bayt</td><td>1 bayt</td><td>5</td><td>~30 bayt – önemsiz</td></tr>
+  <tr><td><code>kullanicilar.rol</code></td><td><code>'ogrenci'</code> 4–7 bayt</td><td>0–1 bayt</td><td>61</td><td>~400 bayt – önemsiz</td></tr>
+  <tr><td><code>cevaplar.verilen_cevap</code></td><td><code>'A'</code> 1 bayt</td><td>1 bayt</td><td>3305</td><td><b>Yok – zaten en küçük hâli</b></td></tr>
+  <tr><td><code>sorular.dogru_cevap</code></td><td><code>'A'</code> 1 bayt</td><td>1 bayt</td><td>100</td><td>Yok</td></tr>
+  <tr><td>Zaman sütunları</td><td><code>'2026-09-25 10:00:00'</code> 19 bayt</td><td>4–6 bayt (Unix zamanı)</td><td>~3600</td><td>~45 KB – tek anlamlı kazanç</td></tr>
+</table>
+<ul>
+  <li><b>En kalabalık tablo (<code>cevaplar</code>) zaten verimli:</b> cevap tek karakter. İsraf yalnızca 5 ve 61 satırlık tablolarda var ve önemsiz.</li>
+  <li><b>Değiştirmenin bedeli okunabilirlik:</b> <code>WHERE durum = 'suruyor'</code> yerine <code>WHERE durum = 1</code>; DB Browser'da <code>bitti</code> yerine <code>2</code>, zaman yerine <code>1790668800</code> görünür. Trigger, VIEW, sorgu ve testlerin hepsi değişir.</li>
+  <li><b>Mevcut yapı enum'un güvencesini zaten sağlıyor:</b> <code>TEXT + CHECK (durum IN (...))</code> yalnızca izin verilen değerleri kabul eder (testlerde <code>'iptal'</code> reddedildi). Sağlamadığı tek şey birkaç KB'lık tasarruf.</li>
+</ul>
+<div class="kutu ana"><b>Karar:</b> Bu ölçekte okunabilirlik seçildi, yapı değiştirilmedi. Sistem büyürse (milyonlarca cevap) önce zaman damgaları INTEGER'a (Unix zamanı), sonra durum/rol sayı koduna çevrilir.</div>
+
 <h2 class="adim">6. Şema (Adım 2) – <code>schema.sql</code></h2>
 <p>Çalıştırma: <code>sqlite3 quiz.db ".read schema.sql"</code> → 6 tablo, 5 indeks, 4 trigger, 2 görünüm (Bölüm 8.1).</p>
 
