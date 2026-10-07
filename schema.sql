@@ -49,7 +49,10 @@ CREATE TABLE oturumlar (
     baslik             TEXT NOT NULL,                -- ör. 'Week 2 · Session 1'
     hafta              INTEGER NOT NULL,
     durum              TEXT NOT NULL DEFAULT 'baslamadi',
-    planlanan_sure_sn  INTEGER NOT NULL DEFAULT 180, -- resmi süre: 3 dakika
+    planlanan_sure_sn  INTEGER NOT NULL DEFAULT 600, -- süre: 10 dakika (20 soru, soru başına ~30 sn)
+    -- NOT (örnek veri): süren quiz (w02-s01), seed.py çalıştığı andan 5 dk önce
+    -- başlamış kaydedilir ve süre o andan beri işler. Geçen süre çok büyük görünüyorsa
+    -- veri eskidir. Taze görmek için: python seed.py (python app.py açılışta kendisi tazeler).
     baslangic          TEXT,                         -- hoca başlatınca dolar
     bitis              TEXT,                         -- hoca bitirince dolar
 
@@ -213,9 +216,12 @@ END;
 -- Puan ve süre gibi TÜRETİLEN bilgiler tablolarda saklanmaz, burada hesaplanır.
 -- =====================================================================
 
--- Her oturumun durumu, geçen süresi ve 3 dakikayı aşan uzatma süresi.
+-- Her oturumun durumu, geçen süresi ve planlanan süreyi (10 dk) aşan uzatma süresi.
 -- strftime('%s', zaman) bir zamanı saniyeye çevirir, iki zamanın farkı = süre.
 CREATE VIEW v_oturum_durumu AS
+    -- NOT (örnek veri): süren quiz (w02-s01), seed.py çalıştığı andan 5 dk önce
+    -- başlamış kaydedilir ve süre o andan beri işler. Geçen süre çok büyük görünüyorsa
+    -- veri eskidir. Taze görmek için: python seed.py (python app.py açılışta kendisi tazeler).
 SELECT
     id, kod, baslik, hafta, durum, planlanan_sure_sn, baslangic, bitis,
     gecen_sure_sn,

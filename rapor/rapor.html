@@ -47,13 +47,13 @@
   <b>İncelemeden önce bilinmesi gerekenler</b>
   <ol style="margin: 6px 0 0; padding-left: 20px;">
     <li><b>İki adres:</b> Hoca ve öğrenciyi aynı anda denemek için birini <code>http://127.0.0.1:5000</code>, diğerini <code>http://localhost:5000</code> adresinde açın. Aynı adresteki iki sekme birbirinin oturumunu kapatır. (Alternatif: farklı tarayıcı ya da gizli pencere.)</li>
-    <li><b>Açılıştaki “örnek veri bayat” mesajı:</b> Örnek veride bir quizin (w02-s01) “sürüyor” durumunda olmasını istedim, çünkü ödevin istediği başlamamış, süren ve bitmiş durumların üçü de veride hazır görünsün ve canlı takip ilk açılışta dolu olsun istedim. Ancak <code>seed.py</code> bu quizi çalıştığı andan 30 sn önce başlamış olarak kaydediyor ve proje günler sonra açıldığında quiz “günlerdir sürüyor” (ör. <code>+250000 sn</code> uzatma) görünecekti. Bunu önlemek için, hocam projeyi açtığında verinin güncel olması amacıyla <b>5 dakikayı sınır alan bir kontrol ekledim:</b> <code>python app.py</code> açılırken süren quiz 5 dakikadan uzun süredir açıksa veriyi <code>seed.py</code> ile yeniden kuruyor ve terminale bunu yazıyor. Böylece quiz <code>0:30</code>'dan başlıyor. Seed her seferinde aynı veriyi ürettiği için (<code>random.seed(42)</code>) silinen önemli bir şey olmuyor, değişen tek şey süren quizin başlangıç saati. Sınırı 3 dakika yapmadım, çünkü quizin resmî süresi 3 dakika ve gerçek uzatmaları (+10, +30 sn) da bayat sayardı. Kontrol yalnızca açılışta yapılıyor, uygulama çalışırken veriye dokunulmuyor.</li>
-    <li><b>Sayaç:</b> Süren quiz <code>0:30</code> civarından başlar. 3 dakika dolunca uzatmayı gösterir (<code>3:12 (+12 sn)</code>). Quiz, hoca <b>Bitir</b> diyene kadar sürer.</li>
+    <li><b>Açılıştaki “örnek veri bayat” mesajı:</b> Örnek veride bir quizin (w02-s01) “sürüyor” durumunda olmasını istedim, çünkü ödevin istediği başlamamış, süren ve bitmiş durumların üçü de veride hazır görünsün ve canlı takip ilk açılışta dolu olsun istedim. Ancak <code>seed.py</code> bu quizi çalıştığı andan 5 dk önce başlamış olarak kaydediyor ve proje günler sonra açıldığında quiz “günlerdir sürüyor” (ör. <code>+250000 sn</code> uzatma) görünecekti. Bunu önlemek için, hocam projeyi açtığında verinin güncel olması amacıyla <b>15 dakikayı sınır alan bir kontrol ekledim:</b> <code>python app.py</code> açılırken süren quiz 15 dakikadan uzun süredir açıksa veriyi <code>seed.py</code> ile yeniden kuruyor ve terminale bunu yazıyor. Böylece quiz <code>5:00</code>'dan başlıyor. Seed her seferinde aynı veriyi ürettiği için (<code>random.seed(42)</code>) silinen önemli bir şey olmuyor, değişen tek şey süren quizin başlangıç saati. Sınırı quizin süresi (10 dakika) + 5 dakika pay olarak seçtim, daha kısa olsaydı normal süren ya da biraz uzamış bir quizi de bayat sayardı. Kontrol yalnızca açılışta yapılıyor, uygulama çalışırken veriye dokunulmuyor.</li>
+    <li><b>Sayaç:</b> Süren quiz <code>5:00</code> civarından başlar. 10 dakika dolunca uzatmayı gösterir (<code>10:12 (+12 sn)</code>). Quiz, hoca <b>Bitir</b> diyene kadar sürer.</li>
     <li><b>Aynı anda tek quiz:</b> w02-s02'yi başlatmak için önce w02-s01'i <b>Bitir</b>'in.</li>
     <li><b>Sarı kutular hata değildir:</b> Veritabanının reddettiği işlemler sarı “veri bütünlüğü kuralı” kutusunda açıklanır.</li>
     <li><b>Live:</b> Sayfaların kendiliğinden yenilenmesi beklenen bir davranıştır. Başlat ve Bitir öğrenci ekranına 1 sn içinde yansır.</li>
-    <li><b>Demo öğrencisi:</b> <code>20240023@ogrenci.edu.tr</code> / <code>ogrenci123</code>. Süren quize katılmış ama henüz cevap vermemiş.</li>
-    <li><b>DB Browser:</b> <code>quiz.db</code> doğrudan açılırsa açılış kontrolü çalışmaz. Taze süre için önce <code>python seed.py</code> çalıştırın.</li>
+    <li><b>Demo öğrencisi:</b> <code>20240008@ogrenci.edu.tr</code> / <code>ogrenci123</code>. Süren quize katılmış ama henüz cevap vermemiş.</li>
+    <li><b>DB Browser:</b> <code>quiz.db</code> doğrudan açılırsa açılış kontrolü çalışmaz. Taze süre için önce <code>python seed.py</code> çalıştırın. Bu not <code>oturumlar</code> tablosunun ve <code>v_oturum_durumu</code> görünümünün tanımında da yazılıdır.</li>
     <li><b>Bilinen sınırlamalar:</b> Windows'ta test edildi. Mac'te <code>python3</code> gerekebilir, 5000 portu AirPlay ile çakışabilir.</li>
   </ol>
 </div>
@@ -173,7 +173,7 @@
   <text class="al" x="290" y="100">baslik</text>
   <text class="al" x="290" y="118">hafta</text>
   <text class="al" x="290" y="136">durum</text>
-  <text class="al" x="290" y="154">planlanan_sure_sn  <tspan fill="#5b6475">(180)</tspan></text>
+  <text class="al" x="290" y="154">planlanan_sure_sn  <tspan fill="#5b6475">(600)</tspan></text>
   <text class="al" x="290" y="172">baslangic</text>
   <text class="al" x="290" y="190">bitis</text>
 
@@ -285,9 +285,9 @@
   <tr><th>Sütun</th><th>Şu an</th><th>Kod ile</th><th>Satır</th><th>Kazanç</th></tr>
   <tr><td><code>oturumlar.durum</code></td><td><code>'baslamadi'</code> 5–9 bayt</td><td>1 bayt</td><td>5</td><td>~30 bayt – önemsiz</td></tr>
   <tr><td><code>kullanicilar.rol</code></td><td><code>'ogrenci'</code> 4–7 bayt</td><td>0–1 bayt</td><td>61</td><td>~400 bayt – önemsiz</td></tr>
-  <tr><td><code>cevaplar.verilen_cevap</code></td><td><code>'A'</code> 1 bayt</td><td>1 bayt</td><td>3018</td><td><b>Yok – zaten en küçük hâli</b></td></tr>
+  <tr><td><code>cevaplar.verilen_cevap</code></td><td><code>'A'</code> 1 bayt</td><td>1 bayt</td><td>3186</td><td><b>Yok – zaten en küçük hâli</b></td></tr>
   <tr><td><code>sorular.dogru_cevap</code></td><td><code>'A'</code> 1 bayt</td><td>1 bayt</td><td>100</td><td>Yok</td></tr>
-  <tr><td>Zaman sütunları</td><td><code>'2026-09-25 10:00:00'</code> 19 bayt</td><td>4–6 bayt (Unix zamanı)</td><td>~3300</td><td>~45 KB – tek anlamlı kazanç</td></tr>
+  <tr><td>Zaman sütunları</td><td><code>'2026-09-25 10:00:00'</code> 19 bayt</td><td>4–6 bayt (Unix zamanı)</td><td>~3450</td><td>~50 KB – tek anlamlı kazanç</td></tr>
 </table>
 <ul>
   <li><b>En kalabalık tablo (<code>cevaplar</code>) zaten verimli:</b> cevap tek karakter. İsraf yalnızca 5 ve 61 satırlık tablolarda var ve önemsiz.</li>
@@ -307,7 +307,7 @@
   <tr><td>UNIQUE</td><td>Tekrarı engeller</td><td><code>email</code>, <code>ogrenci_no</code>, <code>(kullanici, oturum, soru)</code></td></tr>
   <tr><td>NOT NULL</td><td>Boş bırakılamaz</td><td>ad, soyad, soru metni, şıklar</td></tr>
   <tr><td>CHECK</td><td>Değer kuralına uymalı</td><td>cevap ∈ {A,B,C,D}; durum–zaman tutarlılığı</td></tr>
-  <tr><td>DEFAULT</td><td>Değer verilmezse otomatik doldurulur</td><td><code>kayit_zamani</code>, <code>durum='baslamadi'</code>, süre 180 sn</td></tr>
+  <tr><td>DEFAULT</td><td>Değer verilmezse otomatik doldurulur</td><td><code>kayit_zamani</code>, <code>durum='baslamadi'</code>, süre 600 sn</td></tr>
 </table>
 
 <h3>6.2 Trigger'lar</h3>
@@ -371,16 +371,16 @@
   <tr><td>oturumlar</td><td>5</td><td>3 bitti, 1 sürüyor, 1 başlamadı</td></tr>
   <tr><td>sorular</td><td>100</td><td>SQL konulu, <code>sorular.csv</code> dosyasından; doğru şıklar A/B/C/D arasında eşit dağıtıldı</td></tr>
   <tr><td>oturum_sorulari</td><td>100</td><td>Her oturuma 20 soru, sıra 1–20</td></tr>
-  <tr><td>katilimlar</td><td>206</td><td>Öğrencilerin ~%90'ı katılır</td></tr>
-  <tr><td>cevaplar</td><td>3018</td><td>Soruların ~%8'i boş bırakılır; bazı cevaplar sonradan değiştirilir (UPSERT)</td></tr>
+  <tr><td>katilimlar</td><td>212</td><td>Öğrencilerin ~%90'ı katılır</td></tr>
+  <tr><td>cevaplar</td><td>3186</td><td>Soruların ~%8'i boş bırakılır; bazı cevaplar sonradan değiştirilir (UPSERT)</td></tr>
 </table>
 
 <h3>7.3 Önemli noktalar</h3>
 <ul>
   <li><b>Gerçek akış izlenir:</b> oturum <code>baslamadi</code> olarak eklenir → başlatılır → cevaplar girilir → bitirilir. Bitmiş oturuma doğrudan cevap eklenemediği (trigger) için başka yol yoktur.</li>
   <li><b>Gerçekçi sonuçlar:</b> her öğrencinin %40–95 arası bir başarı oranı vardır; doğru/yanlış cevap buna göre seçilir.</li>
-  <li><b>Süre:</b> bitmiş 3 oturum tam 180 sn (3 dk) sürer. Uzatma, <code>uzatmalar</code> listesiyle eklenebilir; şimdilik 0.</li>
-  <li><b>Canlı oturum:</b> 4. oturum, betik çalıştığı andan 30 sn önce başlamış gibi kurulur; öğrenciler 0–5 soruya ulaşmıştır (normal tempo: soru başına ~9 sn).</li>
+  <li><b>Süre:</b> bitmiş 3 oturum tam 600 sn (10 dk) sürer. Uzatma, <code>uzatmalar</code> listesiyle eklenebilir; şimdilik 0.</li>
+  <li><b>Canlı oturum:</b> 4. oturum, betik çalıştığı andan 5 dk önce başlamış gibi kurulur; öğrenciler 0–10 soruya ulaşmıştır (normal tempo: soru başına ~30 sn).</li>
   <li><b>Şifreler:</b> <code>hashlib.pbkdf2_hmac</code> + her kullanıcıya özel 16 baytlık rastgele salt. Deneme şifreleri: öğrenci <code>ogrenci123</code>, hoca <code>hoca123</code>.</li>
   <li><b>SQL enjeksiyonuna karşı:</b> tüm değerler <code>?</code> yer tutucularıyla gönderilir, metin birleştirme ile sorgu kurulmaz.</li>
 </ul>
@@ -391,7 +391,7 @@
 <h3>8.1 Görünümler (VIEW) – <code>schema.sql</code> içinde</h3>
 <table>
   <tr><th style="width:24%">Görünüm</th><th>Hesapladığı</th></tr>
-  <tr><td><code>v_oturum_durumu</code></td><td>Her oturumun geçen süresi ve 180 sn'yi aşan uzatma süresi (<code>strftime('%s', …)</code> ile tam saniye)</td></tr>
+  <tr><td><code>v_oturum_durumu</code></td><td>Her oturumun geçen süresi ve planlanan süreyi (600 sn) aşan uzatma süresi (<code>strftime('%s', …)</code> ile tam saniye)</td></tr>
   <tr><td><code>v_sonuclar</code></td><td>Her katılımcının her oturumdaki doğru, yanlış, boş sayısı ve yüzdesi. <b>Puanlama kuralı yalnızca burada yazılıdır.</b></td></tr>
 </table>
 <div class="kutu ana"><b>Puanlama:</b> doğru = 1, yanlış = 0, boş = 0 &nbsp;→&nbsp; yüzde = doğru ÷ oturumdaki soru sayısı × 100. Genel sıralamada payda bitmiş oturumların toplam sorusudur; katılınmayan quiz 0 sayılır.</div>
@@ -414,15 +414,15 @@
 <h3>8.3 Örnek çıktılar</h3>
 <table>
   <tr><th>kod</th><th>katılımcı</th><th>katılmayan</th><th>verilen cevap</th><th>beklenen</th><th>tamamlanma</th></tr>
-  <tr><td>w02-s01 (B2)</td><td>49</td><td>11</td><td>137</td><td>980</td><td>%14.0</td></tr>
+  <tr><td>w02-s01 (B2)</td><td>55</td><td>5</td><td>294</td><td>1100</td><td>%26.7</td></tr>
 </table>
 <table>
   <tr><th>kod</th><th>katılımcı</th><th>ortalama</th><th>en yüksek</th><th>en düşük</th></tr>
-  <tr><td>w01-s01 (C2)</td><td>51</td><td>%60.2</td><td>%100</td><td>%20</td></tr>
-  <tr><td>w01-s02</td><td>53</td><td>%63.6</td><td>%100</td><td>%25</td></tr>
-  <tr><td>w01-s03</td><td>53</td><td>%65.1</td><td>%95</td><td>%35</td></tr>
+  <tr><td>w01-s01 (C2)</td><td>52</td><td>%62.0</td><td>%90</td><td>%15</td></tr>
+  <tr><td>w01-s02</td><td>53</td><td>%61.9</td><td>%95</td><td>%15</td></tr>
+  <tr><td>w01-s03</td><td>52</td><td>%62.5</td><td>%95</td><td>%30</td></tr>
 </table>
-<p><b>Not:</b> Süren oturum, <code>seed.py</code> çalıştırılmadan 30 sn önce başlamış kabul edilir; kimse bitirmezse süre ve uzatma artmaya devam eder. <code>python app.py</code> açılışta 5 dakikadan eskiyse veriyi yeniler (Bölüm 10.2).</p>
+<p><b>Not:</b> Süren oturum, <code>seed.py</code> çalıştırılmadan 5 dk önce başlamış kabul edilir; kimse bitirmezse süre ve uzatma artmaya devam eder. <code>python app.py</code> açılışta 15 dakikadan eskiyse veriyi yeniler (Bölüm 10.2).</p>
 <p>D akışının sonucu: öğrenci önce B, sonra A dedi → <code>cevaplar</code> tablosunda <b>tek</b> satır, değeri A; oturum bitince sonuç 1 doğru, 19 boş, %5.</p>
 
 <h2 class="adim">9. Veri Bütünlüğü Testleri (Adım 5) – <code>testler.py</code></h2>
@@ -467,9 +467,9 @@
 <ul>
   <li><b>Kurallar veritabanında:</b> arayüzde ayrıca kontrol yazılmadı. Ör. hoca bir quiz sürerken ikincisini başlatmak isterse ya da öğrenci bitmiş quizde cevap değiştirmek isterse ekranda sarı kural kutusu çıkar (ör. “Aynı anda yalnızca bir quiz sürebilir”) ve altında veritabanının asıl mesajı görünür.</li>
   <li><b>Giriş:</b> girilen şifre kayıtlı salt ile hashlenir ve kayıtlı hash ile karşılaştırılır; şifrenin kendisi hiçbir yerde saklanmaz.</li>
-  <li><b>Canlı (live):</b> sayfalar saniyede bir <code>/canli</code> adresine küçük bir soru sorar (cevap ör. <code>{"oturum_id": 4, "imza": "4-49-137"}</code>; imza = süren quiz + katılımcı + cevap sayısı). Değer değiştiyse sayfa yenilenir, değişmediyse hiçbir şey olmaz. Her saniye bütün sayfayı yüklemek yerine birkaç baytlık bir kontrol yapılır.</li>
-  <li><b>Süre sayacı:</b> tarayıcıda saniye saniye işler, 180 sn aşılınca uzatmayı gösterir (<code>3:12 (+12 sn)</code>).</li>
-  <li><b>Açılışta bayat veri kontrolü:</b> örnek verideki süren quiz <code>seed.py</code> anından beri işler. Hoca projeyi günler sonra açtığında “günlerdir sürüyor” görünmesin diye <code>python app.py</code> açılışta bir kez bakar: süren quiz 5 dakikadan (<code>BAYAT_ESIGI_SN = 300</code>) uzun süredir açıksa <code>seed.py</code> çalıştırılır. Uygulama çalışırken bir daha bakılmaz; 3 dakikalık eşik seçilmedi çünkü gerçek uzatmaları da bayat sayardı.</li>
+  <li><b>Canlı (live):</b> sayfalar saniyede bir <code>/canli</code> adresine küçük bir soru sorar (cevap ör. <code>{"oturum_id": 4, "imza": "4-55-294"}</code>; imza = süren quiz + katılımcı + cevap sayısı). Değer değiştiyse sayfa yenilenir, değişmediyse hiçbir şey olmaz. Her saniye bütün sayfayı yüklemek yerine birkaç baytlık bir kontrol yapılır.</li>
+  <li><b>Süre sayacı:</b> tarayıcıda saniye saniye işler, 600 sn aşılınca uzatmayı gösterir (<code>10:12 (+12 sn)</code>).</li>
+  <li><b>Açılışta bayat veri kontrolü:</b> örnek verideki süren quiz <code>seed.py</code> anından beri işler. Hoca projeyi günler sonra açtığında “günlerdir sürüyor” görünmesin diye <code>python app.py</code> açılışta bir kez bakar: süren quiz 15 dakikadan (<code>BAYAT_ESIGI_SN = 900</code>) uzun süredir açıksa <code>seed.py</code> çalıştırılır. Uygulama çalışırken bir daha bakılmaz. Eşik = quiz süresi (10 dk) + 5 dk pay; daha kısa olsaydı normal süren ya da biraz uzamış bir quizi de bayat sayardı.</li>
   <li><b>Kendini anlatan arayüz:</b> deneme hesapları ve “iki ayrı adres” notu giriş sayfasında; README başında “Hızlı inceleme”.</li>
   <li><b>Yetki:</b> öğrenci hoca sayfalarını açamaz (girişe yönlendirilir).</li>
   <li><b>Yapı:</b> <code>app.py</code> (~250 satır) + 5 şablon (<code>base</code>, <code>giris</code>, <code>ogrenci</code>, <code>hoca</code>, <code>sonuc</code>). Sorgular <code>queries.sql</code> ile aynıdır.</li>
@@ -482,6 +482,7 @@
 <table>
   <tr><th style="width:38%">Karar</th><th>Neden</th></tr>
   <tr><td>Oturum = tek quiz (Session)</td><td>Başlık, durum, başlangıç/bitiş tek quize karşılık gelir. Hocaya danışıldı, yanıt bekleniyor.</td></tr>
+  <tr><td>Quiz süresi 10 dakika</td><td>Gerçek sistemde 5 soruya 3 dk (soru başına 36 sn). 20 soru için 3 dk soru başına 9 sn ederdi; 10 dk soru başına 30 sn veriyor.</td></tr>
   <tr><td>Oturum başına 20 soru</td><td>Gerçek quizler 5 soru; ödev 5 oturumda 100 farklı soru istiyor. Modelde sınır yok.</td></tr>
   <tr><td>Kurallar veritabanında</td><td>Hangi araçla erişilirse erişilsin hatalı veri girilemez; arayüzde tekrar yazılmadı.</td></tr>
   <tr><td>Cevap değiştirme = UPSERT, bitince trigger kilidi</td><td>Gerçek sistemde quiz açıkken değiştirme serbest; öğrenci–soru başına tek satır.</td></tr>
@@ -495,8 +496,8 @@
 <table>
   <tr><th style="width:38%">Karar</th><th>Neden</th></tr>
   <tr><td>3 bitti + 1 sürüyor + 1 başlamadı</td><td>Üç durum veride hazır görünür, canlı takip ilk açılışta dolu. “Süren quiz olmasın” denendi: canlı takip boş kaldı, geri dönüldü.</td></tr>
-  <tr><td>Bitmiş quizler tam 3 dk</td><td>Sade veri; uzatma <code>uzatmalar</code> listesiyle eklenebilir.</td></tr>
-  <tr><td>Süren quiz seed anından 30 sn önce başlamış</td><td>İki sekmeyi açmaya 3 dk dolmadan vakit kalsın. İlerleme buna uygun: 0–5 soru.</td></tr>
+  <tr><td>Bitmiş quizler tam 10 dk</td><td>Sade veri; uzatma <code>uzatmalar</code> listesiyle eklenebilir.</td></tr>
+  <tr><td>Süren quiz seed anından 5 dk önce başlamış</td><td>Canlı takip dolu görünsün (öğrenciler 0–10. soruda); uzatmaya geçmeden sekmeleri açmaya 5 dk kalsın.</td></tr>
   <tr><td><code>random.seed(42)</code>, sorular CSV'de, <code>?</code> yer tutucuları</td><td>Yeniden kurulabilir veri · veri/kod ayrımı · SQL enjeksiyonuna karşı koruma.</td></tr>
 </table>
 
@@ -506,7 +507,7 @@
   <tr><td>Flask</td><td>Python'un en sade web kütüphanesi; proje zaten Python, tek ek paket.</td></tr>
   <tr><td>Küçük ama ödevin her maddesini gösteren 4 ekran</td><td>Ödev “küçük ve çalışan” arayüz istiyor (Bölüm 10.1).</td></tr>
   <tr><td>Live: saniyede bir <code>/canli</code> kontrolü</td><td>Tam sayfa yenileme (5 sn) yerine birkaç baytlık kontrol; değişince yenilenir.</td></tr>
-  <tr><td>Açılışta bayat veri kontrolü, eşik 5 dk</td><td>Günler sonra açılınca “günlerdir sürüyor” görünmesin. Sayfa açılışında seed live akışı bozardı; 3 dk gerçek uzatmaları da bayat sayardı.</td></tr>
+  <tr><td>Açılışta bayat veri kontrolü, eşik 15 dk</td><td>Günler sonra açılınca “günlerdir sürüyor” görünmesin. Sayfa açılışında seed live akışı bozardı. Eşik = quiz süresi (10 dk) + 5 dk pay.</td></tr>
   <tr><td>Hoca <code>127.0.0.1</code>, öğrenci <code>localhost</code></td><td>Giriş çerezde tutulur; aynı adresteki sekmeler birbirini kapatır. İki adres ayrı site sayılır (alternatif: farklı tarayıcı / gizli pencere).</td></tr>
   <tr><td>Sarı “veri bütünlüğü kuralı” kutuları, giriş sayfasında deneme hesapları</td><td>Proje tek başına incelenecek: kural ihlali hata gibi görünmesin, giriş için README gerekmesin.</td></tr>
   <tr><td>Canlı simülasyon yapılmadı</td><td>Seed'deki süren quiz canlı takibi zaten dolu gösteriyor.</td></tr>

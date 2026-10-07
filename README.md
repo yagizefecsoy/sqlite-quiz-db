@@ -23,19 +23,19 @@ python app.py
 
 1. **`python testler.py`** → 29 veri bütünlüğü kontrolü, hepsi `[OK]`. Veritabanı değişmez.
 2. **`python app.py`** → tarayıcıda **http://127.0.0.1:5000**. Deneme hesapları giriş sayfasında yazılıdır (hoca: `hoca@okul.edu.tr` / `hoca123`).
-3. **Hoca panelinde beklenen görüntü:** 60 öğrenci, 5 oturum, 100 soru · w01-s01..s03 **bitti**, w02-s01 **sürüyor** (49 öğrencinin canlı ilerlemesiyle), w02-s02 **başlamadı** · ilk 10 sıralaması.
-4. **Canlı akış:** Öğrenciyi aynı anda görmek için ikinci bir sekmede **http://localhost:5000** açıp `20240023@ogrenci.edu.tr` / `ogrenci123` ile girin. Hoca **Bitir / Başlat** dedikçe öğrenci ekranı 1 sn içinde değişir; öğrenci cevap verdikçe hoca paneli güncellenir.
+3. **Hoca panelinde beklenen görüntü:** 60 öğrenci, 5 oturum, 100 soru · w01-s01..s03 **bitti**, w02-s01 **sürüyor** (55 öğrencinin canlı ilerlemesiyle), w02-s02 **başlamadı** · ilk 10 sıralaması.
+4. **Canlı akış:** Öğrenciyi aynı anda görmek için ikinci bir sekmede **http://localhost:5000** açıp `20240008@ogrenci.edu.tr` / `ogrenci123` ile girin. Hoca **Bitir / Başlat** dedikçe öğrenci ekranı 1 sn içinde değişir; öğrenci cevap verdikçe hoca paneli güncellenir.
 
 **İncelemeden önce bilinmesi gerekenler**
 
 1. **İki adres:** Hoca ve öğrenciyi aynı anda denemek için birini **http://127.0.0.1:5000**, diğerini **http://localhost:5000** adresinde açın. Aynı adresteki iki sekme birbirinin oturumunu kapatır. (Alternatif: farklı tarayıcı ya da gizli pencere.)
-2. **Açılıştaki "örnek veri bayat" mesajı:** Örnek veride bir quizin (w02-s01) "sürüyor" durumunda olmasını istedim, çünkü ödevin istediği başlamamış, süren ve bitmiş durumların üçü de veride hazır görünsün ve canlı takip ilk açılışta dolu olsun istedim. Ancak `seed.py` bu quizi çalıştığı andan 30 sn önce başlamış olarak kaydediyor ve proje günler sonra açıldığında quiz "günlerdir sürüyor" (ör. `+250000 sn` uzatma) görünecekti. Bunu önlemek için, hocam projeyi açtığında verinin güncel olması amacıyla **5 dakikayı sınır alan bir kontrol ekledim:** `python app.py` açılırken süren quiz 5 dakikadan uzun süredir açıksa veriyi `seed.py` ile yeniden kuruyor ve terminale bunu yazıyor. Böylece quiz `0:30`'dan başlıyor. Seed her seferinde aynı veriyi ürettiği için (`random.seed(42)`) silinen önemli bir şey olmuyor, değişen tek şey süren quizin başlangıç saati. Sınırı 3 dakika yapmadım, çünkü quizin resmî süresi 3 dakika ve gerçek uzatmaları (+10, +30 sn) da bayat sayardı. Kontrol yalnızca açılışta yapılıyor, uygulama çalışırken veriye dokunulmuyor.
-3. **Sayaç:** Süren quiz `0:30` civarından başlar. 3 dakika dolunca uzatmayı gösterir (`3:12 (+12 sn)`). Quiz, hoca **Bitir** diyene kadar sürer.
+2. **Açılıştaki "örnek veri bayat" mesajı:** Örnek veride bir quizin (w02-s01) "sürüyor" durumunda olmasını istedim, çünkü ödevin istediği başlamamış, süren ve bitmiş durumların üçü de veride hazır görünsün ve canlı takip ilk açılışta dolu olsun istedim. Ancak `seed.py` bu quizi çalıştığı andan 5 dk önce başlamış olarak kaydediyor ve proje günler sonra açıldığında quiz "günlerdir sürüyor" (ör. `+250000 sn` uzatma) görünecekti. Bunu önlemek için, hocam projeyi açtığında verinin güncel olması amacıyla **15 dakikayı sınır alan bir kontrol ekledim:** `python app.py` açılırken süren quiz 15 dakikadan uzun süredir açıksa veriyi `seed.py` ile yeniden kuruyor ve terminale bunu yazıyor. Böylece quiz `5:00`'dan başlıyor. Seed her seferinde aynı veriyi ürettiği için (`random.seed(42)`) silinen önemli bir şey olmuyor, değişen tek şey süren quizin başlangıç saati. Sınırı quizin süresi (10 dakika) + 5 dakika pay olarak seçtim, daha kısa olsaydı normal süren ya da biraz uzamış bir quizi de bayat sayardı. Kontrol yalnızca açılışta yapılıyor, uygulama çalışırken veriye dokunulmuyor.
+3. **Sayaç:** Süren quiz `5:00` civarından başlar. 10 dakika dolunca uzatmayı gösterir (`10:12 (+12 sn)`). Quiz, hoca **Bitir** diyene kadar sürer.
 4. **Aynı anda tek quiz:** w02-s02'yi başlatmak için önce w02-s01'i **Bitir**'in.
 5. **Sarı kutular hata değildir:** Veritabanının reddettiği işlemler sarı "veri bütünlüğü kuralı" kutusunda açıklanır.
 6. **Live:** Sayfaların kendiliğinden yenilenmesi beklenen bir davranıştır. Başlat ve Bitir öğrenci ekranına 1 sn içinde yansır.
-7. **Demo öğrencisi:** `20240023@ogrenci.edu.tr` / `ogrenci123`. Süren quize katılmış ama henüz cevap vermemiş.
-8. **DB Browser:** `quiz.db` doğrudan açılırsa açılış kontrolü çalışmaz. Taze süre için önce `python seed.py` çalıştırın.
+7. **Demo öğrencisi:** `20240008@ogrenci.edu.tr` / `ogrenci123`. Süren quize katılmış ama henüz cevap vermemiş.
+8. **DB Browser:** `quiz.db` doğrudan açılırsa açılış kontrolü çalışmaz. Taze süre için önce `python seed.py` çalıştırın. Bu not `oturumlar` tablosunun ve `v_oturum_durumu` görünümünün tanımında da yazılıdır.
 9. **Bilinen sınırlamalar:** Windows'ta test edildi. Mac'te `python3` gerekebilir, 5000 portu AirPlay ile çakışabilir.
 
 ---
@@ -84,7 +84,7 @@ Arayüzü başlatır → tarayıcıda **http://127.0.0.1:5000** (durdurmak için
 
 > **Notlar**
 > - `seed.py` çalışmadan önce DB Browser kapatılmalıdır (Windows açık dosyanın silinmesine izin vermez).
-> - Süren oturum (w02-s01), `seed.py` çalıştırılmadan 30 sn önce başlamış kabul edilir. Kimse bitirmezse geçen süre ve uzatma artmaya devam eder; `python app.py` açılışta 5 dakikadan eskiyse veriyi yeniler.
+> - Süren oturum (w02-s01), `seed.py` çalıştırılmadan 5 dk önce başlamış kabul edilir. Kimse bitirmezse geçen süre ve uzatma artmaya devam eder; `python app.py` açılışta 15 dakikadan eskiyse veriyi yeniler.
 > - `queries.sql`'in **D bölümü** veriyi değiştirir. DB Browser'da **Revert Changes** ile ya da `python seed.py` ile geri alınır.
 
 ---
@@ -154,7 +154,7 @@ erDiagram
 | Tablo | Görevi |
 |---|---|
 | `kullanicilar` | Öğrenciler ve hoca. Şifre düz metin değil, PBKDF2-SHA256 hash + kullanıcıya özel salt olarak saklanır. |
-| `oturumlar` | Her biri tek bir quiz (ör. `w02-s01` = Week 2 · Session 1). Süre: 180 sn. |
+| `oturumlar` | Her biri tek bir quiz (ör. `w02-s01` = Week 2 · Session 1). Süre: 600 sn (10 dk). |
 | `sorular` | Soru bankası: metin, 4 şık, doğru cevap. |
 | `oturum_sorulari` | Hangi soru hangi oturumda, kaçıncı sırada (oturumlar ↔ sorular çoka-çok ilişkisi). |
 | `katilimlar` | Öğrencinin oturuma katıldığı an (cevap vermeden önce de izlenir). |
@@ -219,8 +219,8 @@ SELECT COUNT(DISTINCT soru_id) AS farkli_soru_sayisi FROM oturum_sorulari;
 | oturumlar | 5 |
 | sorular | 100 |
 | oturum_sorulari | 100 |
-| katilimlar | 206 |
-| cevaplar | 3018 |
+| katilimlar | 212 |
+| cevaplar | 3186 |
 | **farklı soru (oturumlara atanmış)** | **100** |
 
 ---
@@ -267,7 +267,7 @@ Küçük bir Flask uygulaması. Bütün kurallar veritabanında olduğu için ar
 
 **Canlı (live):** Sayfalar saniyede bir `/canli` adresine küçük bir soru sorar (süren quiz, katılımcı ve cevap sayısı). Bir şey değiştiyse sayfa yenilenir. Hoca **Başlat** deyince quiz öğrencilerin ekranında belirir, **Bitir** deyince kaybolur ve sonuç görünür. Süre sayacı saniye saniye işler.
 
-**Açılış kontrolü:** `python app.py`, süren quiz 5 dakikadan uzun süredir açıksa örnek veriyi `seed.py` ile yeniden kurar (bkz. Hızlı inceleme).
+**Açılış kontrolü:** `python app.py`, süren quiz 15 dakikadan uzun süredir açıksa örnek veriyi `seed.py` ile yeniden kurar (bkz. Hızlı inceleme).
 
 **Demo:** Hoca için http://127.0.0.1:5000, öğrenci için http://localhost:5000 açın. Hoca w02-s01'i bitirip w02-s02'yi başlatır → öğrenci ekranında yeni quiz belirir → öğrenci cevap verdikçe hoca panelindeki sayılar artar.
 
@@ -281,8 +281,8 @@ Küçük bir Flask uygulaması. Bütün kurallar veritabanında olduğu için ar
 |---|---|---|---|---|
 | `oturumlar.durum` | `'baslamadi'` 5–9 bayt | 1 bayt | 5 | ~30 bayt, önemsiz |
 | `kullanicilar.rol` | `'ogrenci'` 4–7 bayt | 0–1 bayt | 61 | ~400 bayt, önemsiz |
-| `cevaplar.verilen_cevap` | `'A'` 1 bayt | 1 bayt | 3018 | Yok, zaten en küçük hâli |
-| Zaman sütunları | `'2026-09-25 10:00:00'` 19 bayt | 4–6 bayt | ~3300 | ~45 KB, tek anlamlı kazanç |
+| `cevaplar.verilen_cevap` | `'A'` 1 bayt | 1 bayt | 3186 | Yok, zaten en küçük hâli |
+| Zaman sütunları | `'2026-09-25 10:00:00'` 19 bayt | 4–6 bayt | ~3450 | ~50 KB, tek anlamlı kazanç |
 
 - En kalabalık tablo (`cevaplar`) zaten verimli. İsraf yalnızca küçük tablolarda var.
 - `TEXT + CHECK (durum IN (...))` enum'un "yalnızca izin verilen değer" güvencesini sağlar.
@@ -296,6 +296,7 @@ Küçük bir Flask uygulaması. Bütün kurallar veritabanında olduğu için ar
 | Karar | Neden |
 |---|---|
 | Oturum = tek quiz (gerçek sistemdeki "Session") | Başlık, durum, başlangıç/bitiş zamanı tek bir quize karşılık gelir. Hocaya danışıldı, yanıt bekleniyor. |
+| Quiz süresi 10 dakika | Gerçek sistemde 5 soruya 3 dk (soru başına 36 sn) var. 20 soru için 3 dk soru başına 9 sn ederdi, 10 dk soru başına 30 sn veriyor. |
 | Oturum başına 20 soru | Gerçek quizler 5 soru, ama ödev 5 oturumda 100 farklı soru istiyor. Modelde soru sayısı sınırı yok. |
 | Kurallar veritabanında (FK, bileşik FK, UNIQUE, CHECK, trigger) | Veriye hangi araçla (Python, DB Browser, komut satırı) erişilirse erişilsin hatalı veri girilemez. Arayüzde kural tekrar yazılmadı. |
 | Cevap değiştirme = UPSERT, quiz bitince trigger ile kilit | Gerçek sistemde quiz açıkken cevap değiştirmek serbest. Öğrenci–soru başına tek satır kalır. |
@@ -309,8 +310,8 @@ Küçük bir Flask uygulaması. Bütün kurallar veritabanında olduğu için ar
 | Karar | Neden |
 |---|---|
 | 3 bitti + 1 sürüyor + 1 başlamadı | Ödevin istediği üç durum veride hazır görünür, canlı takip ilk açılışta dolu olur. ("Süren quiz olmasın" seçeneği denendi: canlı takip boş kaldı, geri dönüldü.) |
-| Bitmiş quizler tam 3 dk, uzatmasız | Sade veri. `uzatmalar` listesiyle uzatma eklenebilir. |
-| Süren quiz, seed anından **30 sn** önce başlamış | Hoca ve öğrenci sekmelerini açmaya 3 dakikadan önce vakit kalsın. Öğrenci ilerlemesi buna uygun: 0–5 soru (soru başına ~9 sn). |
+| Bitmiş quizler tam 10 dk, uzatmasız | Sade veri. `uzatmalar` listesiyle uzatma eklenebilir. |
+| Süren quiz, seed anından **5 dk** önce başlamış | Canlı takip dolu görünsün (öğrenciler 0–10. soruda, soru başına ~30 sn) ve uzatmaya geçmeden önce sekmeleri açmaya 5 dk kalsın. |
 | `random.seed(42)` | Her çalıştırmada aynı veri: teslim yeniden kurulabilir. |
 | Sorular `sorular.csv` dosyasında | Veri ile kod ayrı. Yeni soru eklemek için koda dokunmak gerekmez. |
 | Python'da her değer `?` yer tutucusuyla | SQL enjeksiyonuna karşı koruma. |
@@ -322,8 +323,8 @@ Küçük bir Flask uygulaması. Bütün kurallar veritabanında olduğu için ar
 | Flask | Python'un en sade web kütüphanesi. Proje zaten Python kullanıyor, tek ek paket. |
 | Küçük ama ödevin her maddesini gösteren 4 ekran | Ödev "küçük ve çalışan" arayüz istiyor. Her ekran bir ödev maddesine karşılık geliyor (Bölüm 8). |
 | Live: saniyede bir `/canli` kontrolü, değişince yenileme | Her saniye bütün sayfayı yüklemek (5 sorgu + HTML) yerine birkaç baytlık kontrol. İlk sürümdeki 5 saniyelik tam yenilemenin yerini aldı. |
-| Süre sayacı tarayıcıda | Sunucuya sormadan saniye saniye işler, 3 dk aşılınca uzatmayı gösterir. |
-| Açılışta bayat veri kontrolü, eşik **5 dk** | Süren quiz seed anından beri işler, günler sonra "günlerdir sürüyor" görünmesin. Sadece açılışta bakılır (sayfa açılışında seed, live akışı ve yapılan işlemleri silerdi). 3 dk seçilmedi, gerçek uzatmaları da bayat sayardı. |
+| Süre sayacı tarayıcıda | Sunucuya sormadan saniye saniye işler, 10 dk aşılınca uzatmayı gösterir. |
+| Açılışta bayat veri kontrolü, eşik **15 dk** | Süren quiz seed anından beri işler, günler sonra "günlerdir sürüyor" görünmesin. Sadece açılışta bakılır (sayfa açılışında seed, live akışı ve yapılan işlemleri silerdi). Eşik = quiz süresi (10 dk) + 5 dk pay. Daha kısa olsaydı normal süren ya da biraz uzamış bir quizi de bayat sayardı. |
 | Hoca `127.0.0.1:5000`, öğrenci `localhost:5000` | Giriş bilgisi çerezde tutulur. Aynı adreste iki sekme aynı çerezi paylaşır ve biri diğerini kapatır. İki adres ayrı site sayılır. (Alternatif: öğrenci için farklı bir tarayıcı ya da tek bir gizli pencere.) |
 | Reddedilen işlemler sarı "veri bütünlüğü kuralı" kutusunda | Proje tek başına incelenecek. Kural ihlali hata gibi görünmesin: Türkçe açıklama + veritabanının asıl mesajı. |
 | Deneme hesapları giriş sayfasında | README açılmadan da giriş yapılabilsin. |

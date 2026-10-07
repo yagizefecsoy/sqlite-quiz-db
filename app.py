@@ -13,7 +13,7 @@ işlemi reddederse hata mesajını ekranda gösterir.
 
 Çalıştırma:  python app.py   ->   tarayıcıda http://127.0.0.1:5000
 
-Açılışta: süren quiz 5 dakikadan uzun süredir açıksa örnek veri "bayat"
+Açılışta: süren quiz 15 dakikadan uzun süredir açıksa örnek veri "bayat"
 sayılır ve seed.py ile yeniden kurulur (ayrıntı: bayat_veriyi_tazele).
 """
 
@@ -29,7 +29,7 @@ app = Flask(__name__)
 app.secret_key = "quiz-projesi-gizli-anahtar"   # oturum (giriş) bilgisini imzalamak için
 
 VERITABANI = "quiz.db"
-BAYAT_ESIGI_SN = 300   # süren quiz 5 dakikadan uzun süredir açıksa örnek veri bayat sayılır
+BAYAT_ESIGI_SN = 900   # 15 dk = quiz süresi (10 dk) + 5 dk pay. Daha uzun süredir açık quiz = bayat örnek veri
 
 # Veritabanının reddettiği işlemler için ekranda gösterilecek açıklamalar.
 # (hata mesajında geçen ifade, kullanıcıya gösterilecek açıklama)
@@ -95,7 +95,7 @@ def canli_durum(baglanti):
 @app.route("/canli")
 def canli():
     """Sayfalar bu adrese saniyede bir sorar. Cevap küçük bir JSON'dur:
-    {"oturum_id": 4, "imza": "4-49-137"}"""
+    {"oturum_id": 4, "imza": "4-55-294"}"""
     baglanti = baglan()
     durum = canli_durum(baglanti)
     baglanti.close()
@@ -346,7 +346,7 @@ def sonuc(oturum_id):
 def bayat_veriyi_tazele():
     """Örnek veride bir quiz 'sürüyor' olarak bırakılır. seed.py'den günler sonra
     açılırsa bu quiz günlerdir sürüyor görünür. Bu yüzden açılışta bir kez bakılır:
-    quiz.db yoksa ya da süren quiz 5 dakikadan uzun süredir açıksa seed.py çalıştırılır.
+    quiz.db yoksa ya da süren quiz 15 dakikadan uzun süredir açıksa seed.py çalıştırılır.
     Uygulama çalışırken bir daha kontrol edilmez, yapılan işlemler korunur."""
     if not os.path.exists(VERITABANI):
         print("quiz.db bulunamadı, örnek veri kuruluyor (python seed.py)...")

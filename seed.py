@@ -204,7 +204,7 @@ def cevapla(ogrenci_id, oturum_id, soru_id, cevap, zaman):
 
 
 # --- 5a) İlk 3 oturum: başladı, cevaplandı, bitti ---
-# Bitişe eklenecek uzatma (saniye). Şimdilik hepsi tam 3 dakika (uzatma yok).
+# Bitişe eklenecek uzatma (saniye). Şimdilik hepsi tam 10 dakika (uzatma yok).
 # Hoca süreyi aşsaydı buraya ör. [10, 0, 30] yazılırdı.
 uzatmalar = [0, 0, 0]
 baslangiclar = [datetime(2026, 9, 25, 10, 0, 0),
@@ -214,7 +214,7 @@ baslangiclar = [datetime(2026, 9, 25, 10, 0, 0),
 for i in range(3):
     oturum_id = oturum_idleri[i]
     baslangic = baslangiclar[i]
-    bitis = baslangic + timedelta(seconds=180 + uzatmalar[i])
+    bitis = baslangic + timedelta(seconds=600 + uzatmalar[i])
 
     oturumu_baslat(oturum_id, baslangic)
     sorular_listesi = oturum_sorulari(oturum_id)
@@ -227,34 +227,34 @@ for i in range(3):
         for soru_id, dogru_cevap in sorular_listesi:
             if random.random() > 0.92:      # soruların ~%8'i boş bırakılır
                 continue
-            zaman = baslangic + timedelta(seconds=random.randint(20, 175))
+            zaman = baslangic + timedelta(seconds=random.randint(20, 590))
             cevapla(ogrenci_id, oturum_id, soru_id, cevap_sec(ogrenci_id, dogru_cevap), zaman)
 
         # Bazı öğrenciler ilk sorudaki cevabını sonradan değiştirir (UPSERT örneği)
         if random.random() < 0.15:
             soru_id, dogru_cevap = sorular_listesi[0]
-            zaman = baslangic + timedelta(seconds=random.randint(176, 180))
+            zaman = baslangic + timedelta(seconds=random.randint(591, 600))
             cevapla(ogrenci_id, oturum_id, soru_id, dogru_cevap, zaman)
 
     oturumu_bitir(oturum_id, bitis)
 
 
 # --- 5b) 4. oturum: şu an SÜRÜYOR (canlı takip için) ---
-# 30 saniye önce başlamış gibi; öğrenciler ilk birkaç soruya ulaşmış.
-# (Normal tempo: 180 sn'de 20 soru, soru başına ~9 sn -> 30 sn'de en fazla ~5 soru)
+# 5 dakika önce başlamış gibi; öğrenciler soruların bir kısmına ulaşmış.
+# (Normal tempo: 600 sn'de 20 soru, soru başına ~30 sn -> 5 dk'da en fazla ~10 soru)
 oturum_id = oturum_idleri[3]
-baslangic = datetime.now().replace(microsecond=0) - timedelta(seconds=30)
+baslangic = datetime.now().replace(microsecond=0) - timedelta(seconds=300)
 oturumu_baslat(oturum_id, baslangic)
 sorular_listesi = oturum_sorulari(oturum_id)
 
 for ogrenci_id in ogrenci_idleri:
     if random.random() > 0.85:              # öğrencilerin ~%15'i henüz katılmadı
         continue
-    katil(ogrenci_id, oturum_id, baslangic + timedelta(seconds=random.randint(0, 8)))
+    katil(ogrenci_id, oturum_id, baslangic + timedelta(seconds=random.randint(0, 15)))
 
-    ulasilan_soru = random.randint(0, 5)    # katılıp hiç cevap vermemiş olan da var (0)
+    ulasilan_soru = random.randint(0, 10)   # katılıp hiç cevap vermemiş olan da var (0)
     for soru_id, dogru_cevap in sorular_listesi[:ulasilan_soru]:
-        zaman = baslangic + timedelta(seconds=random.randint(9, 29))
+        zaman = baslangic + timedelta(seconds=random.randint(20, 299))
         cevapla(ogrenci_id, oturum_id, soru_id, cevap_sec(ogrenci_id, dogru_cevap), zaman)
 
 # --- 5c) 5. oturum: BAŞLAMADI (sadece soruları atanmış durumda) ---

@@ -52,9 +52,12 @@ ORDER BY o.id;
 -- B. CANLI TAKİP
 -- "Canlı" = sorgu her çalıştırıldığında güncel veriyi yeniden okur.
 -- Süren oturum, durum = 'suruyor' koşuluyla kendiliğinden bulunur.
+-- NOT (örnek veri): süren quiz (w02-s01), seed.py çalıştığı andan 5 dk önce başlamış
+-- kaydedilir ve süre o andan beri işler. Geçen süre çok büyük görünüyorsa veri eskidir.
+-- Taze görmek için: python seed.py (python app.py açılışta kendisi tazeler).
 -- =====================================================================
 
--- B1. Tüm oturumların durumu, geçen süre ve 3 dakikayı aşan uzatma
+-- B1. Tüm oturumların durumu, geçen süre ve planlanan süreyi (10 dk) aşan uzatma
 SELECT kod, baslik, durum, baslangic, bitis,
        gecen_sure_sn,
        uzatma_sn
