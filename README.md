@@ -8,17 +8,21 @@ Derste kullanılan quiz sisteminin veri katmanı: kullanıcılar, quiz oturumlar
 
 ## Çalıştırma
 
-Gereken: **Python 3.8+**. Komutlar proje klasöründe çalıştırılır:
+Gereken: **Python 3.8+**. Komutlar proje klasöründe, **bu sırayla** çalıştırılır:
 
 ```bash
 pip install -r requirements.txt
+python seed.py
 python testler.py
 python app.py
 ```
 
+> ⚠️ **İncelemeye başlamadan önce `python seed.py` çalıştırın.** Veritabanını taze kurar, böylece süren quiz güncel bir süreyle (5:00) başlar. DB Browser açıksa önce kapatın.
+
 | Komut | Ne olur? |
 |---|---|
 | `pip install -r requirements.txt` | Arayüz için Flask'ı kurar (bir kez). |
+| `python seed.py` | Veritabanını sıfırdan, aynı veriyle kurar (~2 sn). Süren quizin süresi bu andan başlar. |
 | `python testler.py` | 29 veri bütünlüğü kontrolü yapar, hepsi `[OK]` çıkar. Veritabanını değiştirmez. |
 | `python app.py` | Arayüzü başlatır: **http://127.0.0.1:5000** (durdurmak için Ctrl+C). |
 
@@ -37,12 +41,11 @@ Hoca panelinde beklenen: 3 quiz **bitti**, w02-s01 **sürüyor** (55 öğrencini
 2. **Açılıştaki "örnek veri bayat" mesajı normaldir.** Örnek veride bir quiz "sürüyor" durumunda bırakıldı, böylece üç durum da veride görünür ve canlı takip dolu açılır. Bu quiz `seed.py` çalıştığı andan 5 dk önce başlamış sayılır. Proje günler sonra açılınca "günlerdir sürüyor" görünmesin diye `python app.py`, süren quiz **15 dakikadan** (quiz süresi 10 dk + 5 dk pay) uzun süredir açıksa veriyi `seed.py` ile yeniden kurar. Seed her seferinde aynı veriyi üretir.
 3. **Quiz süresi 10 dakikadır.** Sayaç süre dolunca uzatmayı gösterir (`10:12 (+12 sn)`), quiz hoca **Bitir** diyene kadar sürer. Aynı anda tek quiz sürebilir: w02-s02'yi başlatmak için önce w02-s01 bitirilmelidir.
 4. **Sarı kutular hata değildir.** Veritabanının reddettiği işlemler (ör. ikinci quizi başlatmak) "veri bütünlüğü kuralı" olarak açıklanır.
-5. **`quiz.db` doğrudan DB Browser'da açılırsa** veri tamdır, yalnızca süren quizin geçen süresi seed anından beri işlemiş görünür. Taze süre için önce `python seed.py`.
+5. **`quiz.db` doğrudan DB Browser'da açılırsa** veri tamdır, yalnızca süren quizin geçen süresi seed anından beri işlemiş görünür. Bu yüzden önce `python seed.py` çalıştırın.
 
 Diğer komutlar:
 
 ```bash
-python seed.py                       # veritabanını sıfırdan kurar (~2 sn, her seferinde aynı veri)
 sqlite3 quiz.db ".read queries.sql"  # bütün sorguları çalıştırır
 ```
 
